@@ -30,8 +30,10 @@
     <Folder Include="npm_task\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="bower.json" />
     <Compile Include="npm_task\distribute.ps1" />
     <Compile Include="npm_task\functions.ps1" />
+    <Compile Include="package.json" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />

@@ -1,0 +1,8 @@
+{
+  "name": "sandbox.common",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "Umi": "^3.3.7-2"
+  }
+}

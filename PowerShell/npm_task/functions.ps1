@@ -1,5 +1,6 @@
 ﻿function Distribute($private:func_list, $private:param_list) {
 	foreach ($f in $private:func_list) {
+		echo ******** $f ******** |oh
 		switch ($f) {
 			'clean' { 
 				$private:param_list | %{ clean $_ }
@@ -40,7 +41,7 @@ function dist-directory([string]$private:path, $private:param) {
 		$dst = [IO.Path]::Combine($path_output, $_.dest)
 		($src = [IO.Path]::Combine($private:path, "*"))|oh
 		New-Item "$dst" -type directory -force |Out-Null
-		if ($_.recurse) {
+		if ($_.recursive) {
 			Copy-Item $src "$dst" -Recurse
 		} else {
 			Copy-Item $src "$dst"
@@ -56,13 +57,13 @@ function dist-file([string] $private:path, $private:param) {
 
 	$layout | ?{ $path_rel -eq $_.where } | %{
 		$dst = [IO.Path]::Combine($path_output, $_.dest)
-		($src = [IO.Path]::Combine($private:path, $_.search))|oh
+		($src = Convert-Path([IO.Path]::Combine($private:path, $_.search)))|oh
 		New-Item "$dst" -type directory -force |Out-Null
 		Copy-Item $src "$dst"
 	}
 }
 function path-module([string] $private:name) {
-	[IO.Path]::Combine((pwd).Path, "node_modules", $private:name)
+	[IO.Path]::Combine((pwd).Path, $private:name)
 }
 function path-output([string] $private:output) {
 	[IO.Path]::Combine((pwd).Path, $private:output)

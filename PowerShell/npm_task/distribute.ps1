@@ -1,81 +1,100 @@
 ﻿param([string[]]$func_list)
-$path_cd = Split-Path -Parent $MyInvocation.MyCommand.Path
-. "$path_cd\functions.ps1"
+$private:path_cd = Split-Path -Parent $MyInvocation.MyCommand.Path
+. "$private:path_cd\functions.ps1"
 
 #ファイル配置レイアウト定義
+
+$local:output = "..\Sandbox.Web"
+
 Distribute $func_list @(
-	@{
-		module = "bootstrap";
-		output = "..\..\applications\Sandbox.Web";
-		directory = @(
-			@{ where = "\dist\css";   recurse = $false; dest = "Content\bootstrap\css" }
-			@{ where = "\dist\fonts"; recurse = $false; dest = "Content\bootstrap\fonts" }
-			@{ where = "\dist\js";    recurse = $false; dest = "Scripts\bootstrap\" }
+	@{#bootstrap(Umi)
+		module = "bower_components\Umi";
+		output = $local:output;
+		file = @(
+			@{ where = "";      search = "README.md"; dest = "Content\bootstrap"}
+			@{ where = "\dist\css"; search = "*.css"; dest = "Content\bootstrap\css" }
+			@{ where = "\dist\fonts"; search = "*.*"; dest = "Content\bootstrap\fonts" }
+			@{ where = "\dist\js";   search = "*.js"; dest = "Scripts\bootstrap"}
 		);
 	}
-	@{
-		module = "jquery";
-		output = "..\..\applications\Sandbox.Web";
-		directory = @(
-			@{ where = "\dist"; recurse = $false; dest = "Scripts\jquery" }
+	@{#jquery
+		module = "node_modules\jquery";
+		output = $local:output;
+		file = @(
+			@{ where = "\dist";  search = "*.js"; dest = "Scripts\jquery" }
+			@{ where = "\dist"; search = "*.map"; dest = "Scripts\jquery" }
 		);
 	}
-	@{
-		module = "jquery-ui-1-11-4";
-		output = "..\..\applications\Sandbox.Web";
+	@{#jquery-validation
+		module = "node_modules\jquery-validation";
+		output = $local:output;
+		file = @(
+			@{ where = "\dist";                        search = "*.js"; dest = "Scripts\jquery-validation"}
+			@{ where = "\dist\localization"; search = "messages_ja.js"; dest = "Scripts\jquery-validation"}
+		);
+	}
+	@{#jquery-ui
+		module = "node_modules\jquery-ui-dist";
+		output = $local:output;
 		directory = @(
-			@{ where = "\images"; recurse = $false; dest = "Content\jquery-ui\images" }
+			@{ where = "\images"; recursive = $true; dest = "Content\jquery-ui\images" }
 		);
 		file = @(
 			@{ where = ""; search = "*.css"; dest = "Content\jquery-ui" }
 			@{ where = "";  search = "*.js"; dest = "Scripts\jquery-ui" }
 		);
 	}
-	@{
-		module = "jquery-ui-1-11-1";
-		output = "..\..\applications\Sandbox.Web";
+	@{#jquery-ui(widget)
+		module = "node_modules\jquery-ui";
+		output = $local:output;
 		file = @(
 			@{ where = "\ui";                  search = "*.js"; dest = "Scripts\jquery-ui\widgets" }
+			@{ where = "\ui\effects";          search = "*.js"; dest = "Scripts\jquery-ui\widgets" }
+			@{ where = "\ui\widgets";          search = "*.js"; dest = "Scripts\jquery-ui\widgets" }
 			@{ where = "\ui\i18n"; search = "datepicker-ja.js"; dest = "Scripts\jquery-ui\widgets" }
 		);
 	}
-	@{
-		module = "vue";
-		output = "..\..\applications\Sandbox.Web";
+	@{#slickgrid
+		module = "node_modules\slickgrid";
+		output = $local:output;
+		directory = @(
+			@{ where = "\images"; recursive = $true; dest = "Content\slickgrid\images" }
+			@{ where = "\images"; recursive = $true; dest = "images" } #for Slickgrid Demo
+		);
 		file = @(
-			@{ where = "\dist"; search = "*.js"; dest = "Scripts\vue" }
+			@{ where = "";     search = "slick*.css"; dest = "Content\slickgrid" }
+			@{ where = "";      search = "slick*.js"; dest = "Scripts\slickgrid" }
+			@{ where = "\controls"; search = "*.css"; dest = "Content\slickgrid\controls" }
+			@{ where = "\controls";  search = "*.js"; dest = "Scripts\slickgrid\controls" }
+			@{ where = "\plugins";  search = "*.css"; dest = "Content\slickgrid\plugins" }
+			@{ where = "\plugins";   search = "*.js"; dest = "Scripts\slickgrid\plugins" }
+			@{ where = "\lib";      search = "*.css"; dest = "Content\slickgrid\lib" }
+			@{ where = "\lib";       search = "*.js"; dest = "Scripts\slickgrid\lib" }
+			@{ where = "\examples"; search = "examples.css"; dest = "Content\slickgrid\examples" } #for Slickgrid Demo
+			@{ where = "\examples"; search = "*.js"; dest = "Scripts\slickgrid\examples" } #for Slickgrid Demo
 		);
 	}
-	@{
-		module = "slickgrid";
-		output = "..\..\applications\Sandbox.Web";
-		directory = @(
-			@{ where = "\images"; recurse = $false; dest = "Content\slickgrid\images" }
-		);
+	@{#vue.js
+		module = "node_modules\vue";
+		output = $local:output;
 		file = @(
-			@{ where = "";               search = "*.css"; dest = "Content\slickgrid" }
-			@{ where = "";                search = "*.js"; dest = "Scripts\slickgrid"}
-			@{ where = "\controls";      search = "*.css"; dest = "Content\slickgrid\controls" }
-			@{ where = "\controls";       search = "*.js"; dest = "Scripts\slickgrid\controls"}
-			@{ where = "\plugins";       search = "*.css"; dest = "Content\slickgrid\plugins" }
-			@{ where = "\plugins";        search = "*.js"; dest = "Scripts\slickgrid\plugins"}
-			@{ where = "\lib";           search = "*.css"; dest = "Content\slickgrid\lib" }
-			@{ where = "\lib";            search = "*.js"; dest = "Scripts\slickgrid\lib"}
-			@{ where = "\example"; search = "example.css"; dest = "Content\slickgrid\example"}
-			@{ where = "\example";        search = "*.js"; dest = "Scripts\slickgrid\example"}
+			@{ where = "\dist";    search = "*.js"; dest = "Scripts\vue" }
+			@{ where = "\types"; search = "*.d.ts"; dest = "Scripts\typings\vue" }
 		);
 	}
 	<# 定義サンプル
 	@{
-		output = "このプロジェクトフォルダをカレントとした、出力先相対パス";
 		module = "対象のモジュール名（node_modules以下のフォルダ名）";
+		output = "このプロジェクトフォルダをカレントとした、出力先相対パス";
 		directory = @(
-			配列。whereと一致するフォルダを、destへコピーします。recurseがtrueのときサブフォルダも対象とします。
-			@{ where = "\モジュールフォルダ配下のパス"; recurse = $true|$false; dest = "outputをカレントとしたコピー先相対パス" }
+			下記構造ハッシュの配列。whereと一致するフォルダ配下を、destへコピーします。recursiveが$trueのときサブフォルダも対象にします。
+			@{ where = "\モジュールフォルダ配下のパス"; recursive = $true|$false; dest = "outputをカレントとしたコピー先相対パス" }
+			@{ where = "空のときルート対象"; recursive = $true|$false; dest = "" }
 		);
 		file = @(
-			配列。whereと一致するフォルダ配下の、searchと一致するファイルを、destへコピーします。
+			下記構造ハッシュの配列。whereと一致するフォルダ配下の、searchと一致するファイルを、destへコピーします。
 			@{ where = "\モジュールフォルダ配下のパス"; search = "コピー対象。ワイルドカード指定可"; dest = "outputをカレントとしたコピー先相対パス" }
+			@{ where = "空のときルート対象"; search = "*.*"; dest = "" }
 		);
 	}
 	#>
