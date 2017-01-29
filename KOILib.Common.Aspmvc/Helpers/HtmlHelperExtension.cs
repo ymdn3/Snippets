@@ -13,8 +13,8 @@ namespace KOILib.Common.Aspmvc.Helpers
 {
     public static class HtmlHelperExtension
     {
-        private static Dictionary<string, string> _inlineRenderCache = new Dictionary<string, string>();
-        private static SHA1CryptoServiceProvider _sha1 = new SHA1CryptoServiceProvider();
+        private static readonly Dictionary<string, string> _inlineRenderCache = new Dictionary<string, string>();
+        private static readonly SHA1CryptoServiceProvider _sha1 = new SHA1CryptoServiceProvider();
 
         public static IHtmlString InlineRender<TModel>(this HtmlHelper<TModel> self, string[] virtualPathes)
         {
