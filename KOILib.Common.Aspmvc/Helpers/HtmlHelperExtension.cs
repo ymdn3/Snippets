@@ -9,7 +9,7 @@ using System.Web;
 using System.Web.Mvc;
 using KOILib.Common.Core.Extensions;
 
-namespace KOILib.Common.Mvc.Helpers
+namespace KOILib.Common.Aspmvc.Helpers
 {
     public static class HtmlHelperExtension
     {

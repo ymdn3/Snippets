@@ -7,8 +7,8 @@
     <ProjectGuid>{BAF0C052-C91E-4EB7-A5E7-45CB4EC59286}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KOILib.Common.Mvc</RootNamespace>
-    <AssemblyName>KOILib.Common.Mvc</AssemblyName>
+    <RootNamespace>KOILib.Common.Aspmvc</RootNamespace>
+    <AssemblyName>KOILib.Common.Aspmvc</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

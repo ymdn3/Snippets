@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.Log4", "KOILi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.DataAccess", "KOILib.Common.DataAccess\KOILib.Common.DataAccess.csproj", "{87BC7332-C2C5-4632-A8AA-7E9CE273206B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.Mvc", "KOILib.Common.Mvc\KOILib.Common.Mvc.csproj", "{BAF0C052-C91E-4EB7-A5E7-45CB4EC59286}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.Aspmvc", "KOILib.Common.Aspmvc\KOILib.Common.Aspmvc.csproj", "{BAF0C052-C91E-4EB7-A5E7-45CB4EC59286}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
