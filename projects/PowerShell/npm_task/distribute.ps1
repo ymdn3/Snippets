@@ -25,6 +25,13 @@ Distribute $func_list @(
 			@{ where = "\dist"; search = "*.map"; dest = "Scripts\jquery" }
 		);
 	}
+	@{#jquery-ajax-unobtrusive
+		module = "node_modules\jquery-ajax-unobtrusive";
+		output = $local:output;
+		file = @(
+			@{ where = "";  search = "jquery.*.js"; dest = "Scripts\jquery" }
+		);
+	}
 	@{#jquery-validation
 		module = "node_modules\jquery-validation";
 		output = $local:output;
