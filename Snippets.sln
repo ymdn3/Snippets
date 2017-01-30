@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F5034706-568F-408A-B7B3-4D38C6DB8A32}") = "PowerShell", "PowerShell\PowerShell.pssproj", "{6CAFC0C6-A428-4D30-A9F9-700E829FEA51}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common", "KOILib.Common\KOILib.Common.csproj", "{11AF762B-BB5B-4A26-9C5D-954DA214A29D}"
+Project("{F5034706-568F-408A-B7B3-4D38C6DB8A32}") = "PowerShell", "projects\PowerShell\PowerShell.pssproj", "{6CAFC0C6-A428-4D30-A9F9-700E829FEA51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "managed", "managed", "{B014AD46-D393-46D6-A5DC-A5D839FD194A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.Log4", "KOILib.Common.Log4\KOILib.Common.Log4.csproj", "{68236E7D-23AE-4C43-89E4-F04DEF25EBA1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common", "projects\KOILib.Common\KOILib.Common.csproj", "{11AF762B-BB5B-4A26-9C5D-954DA214A29D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.DataAccess", "KOILib.Common.DataAccess\KOILib.Common.DataAccess.csproj", "{87BC7332-C2C5-4632-A8AA-7E9CE273206B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.Log4", "projects\KOILib.Common.Log4\KOILib.Common.Log4.csproj", "{68236E7D-23AE-4C43-89E4-F04DEF25EBA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KOILib.Common.DataAccess", "projects\KOILib.Common.DataAccess\KOILib.Common.DataAccess.csproj", "{87BC7332-C2C5-4632-A8AA-7E9CE273206B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

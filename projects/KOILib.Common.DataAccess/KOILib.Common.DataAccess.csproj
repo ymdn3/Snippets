@@ -30,18 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MiniProfiler, Version=3.2.0.157, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MiniProfiler.3.2.0.157\lib\net40\MiniProfiler.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -53,15 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbContextBase.cs" />
-    <Compile Include="DbContextBase.Dapper.cs" />
-    <Compile Include="DbContextModelBase.cs" />
-    <Compile Include="DbContextTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Trace\TraceDbProfiler.cs" />
-    <Compile Include="Trace\TraceDbProfilerErrorEventArgs.cs" />
-    <Compile Include="Trace\TraceDbProfilerEventArgs.cs" />
-    <Compile Include="Trace\TraceHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KOILib.Common.Log4\KOILib.Common.Log4.csproj">
