@@ -16,6 +16,7 @@
   },
   "scripts": {
     "clean": "%npm_package_config_ps% npm_task\\distribute.ps1 clean",
-    "distribute": "%npm_package_config_ps% npm_task\\distribute.ps1 clean,dist"
+    "dist": "%npm_package_config_ps% npm_task\\distribute.ps1 dist",
+    "re-dist": "%npm_package_config_ps% npm_task\\distribute.ps1 clean,dist"
   }
 }

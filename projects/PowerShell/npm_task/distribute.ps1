@@ -66,7 +66,6 @@ Distribute $func_list @(
 		output = $local:output;
 		directory = @(
 			@{ where = "\images"; recursive = $true; dest = "Content\slickgrid\images" }
-			@{ where = "\images"; recursive = $true; dest = "images" } #for Slickgrid Demo
 		);
 		file = @(
 			@{ where = "";     search = "slick*.css"; dest = "Content\slickgrid" }
