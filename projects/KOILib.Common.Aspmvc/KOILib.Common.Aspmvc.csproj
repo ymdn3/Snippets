@@ -71,8 +71,12 @@
   <ItemGroup>
     <Compile Include="Controllers\AcceptParameterAttribute.cs" />
     <Compile Include="Controllers\ControllerBase.cs" />
+    <Compile Include="DynamicViewDataDictionary.cs" />
+    <Compile Include="Helpers\BootstrapHelper.cs" />
+    <Compile Include="Helpers\BootstrapHelperExtension.cs" />
     <Compile Include="Helpers\HtmlHelperExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebViewPageBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

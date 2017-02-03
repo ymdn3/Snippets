@@ -14,7 +14,7 @@ namespace KOILib.Common.Aspmvc.Helpers
     public static class HtmlHelperExtension
     {
         private static readonly Dictionary<string, string> _inlineRenderCache = new Dictionary<string, string>();
-        private static readonly SHA1CryptoServiceProvider _sha1 = new SHA1CryptoServiceProvider();
+        private static readonly SHA512CryptoServiceProvider _hasher = new SHA512CryptoServiceProvider();
 
         public static IHtmlString InlineRender<TModel>(this HtmlHelper<TModel> self, string[] virtualPathes)
         {
@@ -41,7 +41,7 @@ namespace KOILib.Common.Aspmvc.Helpers
             {
                 using (var r = File.OpenText(physicalPath))
                 {
-                    var hash = BitConverter.ToString(_sha1.ComputeHash(r.BaseStream));
+                    var hash = BitConverter.ToString(_hasher.ComputeHash(r.BaseStream));
                     if (!_inlineRenderCache.ContainsKey(hash))
                     {
                         r.BaseStream.Position = 0;
