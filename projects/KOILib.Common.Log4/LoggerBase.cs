@@ -72,10 +72,10 @@ namespace KOILib.Common.Log4
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public Task Fatal(Exception ex)
+        public void Fatal(Exception ex)
         {
             var method = SearchInvoker();
-            return Fatal(method, ex);
+            Fatal(method, ex);
         }
 
         /// <summary>
@@ -84,9 +84,9 @@ namespace KOILib.Common.Log4
         /// <param name="method">System.Reflection.MethodBase.GetCurrentMethod()</param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public virtual Task Fatal(MethodBase method, Exception ex)
+        public virtual void Fatal(MethodBase method, Exception ex)
         {
-            return Write(LogLevel.Fatal, method, ex);
+            Write(LogLevel.Fatal, method, ex);
         }
 
         /// <summary>
@@ -94,10 +94,10 @@ namespace KOILib.Common.Log4
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public Task Error(Exception ex)
+        public void Error(Exception ex)
         {
             var method = SearchInvoker();
-            return Error(method, ex);
+            Error(method, ex);
         }
 
         /// <summary>
@@ -106,9 +106,9 @@ namespace KOILib.Common.Log4
         /// <param name="method">System.Reflection.MethodBase.GetCurrentMethod()</param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public virtual Task Error(MethodBase method, Exception ex)
+        public virtual void Error(MethodBase method, Exception ex)
         {
-            return Write(LogLevel.Error, method, ex);
+            Write(LogLevel.Error, method, ex);
         }
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace KOILib.Common.Log4
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public Task Warn(Exception ex)
+        public void Warn(Exception ex)
         {
             var method = SearchInvoker();
-            return Warn(method, ex);
+            Warn(method, ex);
         }
 
         /// <summary>
@@ -128,9 +128,9 @@ namespace KOILib.Common.Log4
         /// <param name="method">System.Reflection.MethodBase.GetCurrentMethod()</param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public virtual Task Warn(MethodBase method, Exception ex)
+        public virtual void Warn(MethodBase method, Exception ex)
         {
-            return Write(LogLevel.Warn, method, ex);
+            Write(LogLevel.Warn, method, ex);
         }
 
         /// <summary>
@@ -139,13 +139,13 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public Task Warn(string msg, params object[] args)
+        public void Warn(string msg, params object[] args)
         {
             var method = SearchInvoker();
             if (args.Length > 0)
-                return Warn(method, msg, args);
+                Warn(method, msg, args);
             else
-                return Warn(method, msg);
+                Warn(method, msg);
         }
 
         /// <summary>
@@ -155,12 +155,12 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task Warn(MethodBase method, string msg, params object[] args)
+        public virtual void Warn(MethodBase method, string msg, params object[] args)
         {
             if (args.Length > 0)
-                return Write(LogLevel.Warn, method, msg, args);
+                Write(LogLevel.Warn, method, msg, args);
             else
-                return Write(LogLevel.Warn, method, msg);
+                Write(LogLevel.Warn, method, msg);
         }
 
         /// <summary>
@@ -169,13 +169,13 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public Task Info(string msg, params object[] args)
+        public void Info(string msg, params object[] args)
         {
             var method = SearchInvoker();
             if (args.Length > 0)
-                return Info(method, msg, args);
+                Info(method, msg, args);
             else
-                return Info(method, msg);
+                Info(method, msg);
         }
 
         /// <summary>
@@ -185,12 +185,12 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task Info(MethodBase method, string msg, params object[] args)
+        public virtual void Info(MethodBase method, string msg, params object[] args)
         {
             if (args.Length > 0)
-                return Write(LogLevel.Info, method, msg, args);
+                Write(LogLevel.Info, method, msg, args);
             else
-                return Write(LogLevel.Info, method, msg);
+                Write(LogLevel.Info, method, msg);
         }
 
         /// <summary>
@@ -199,13 +199,13 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public Task Debug(string msg, params object[] args)
+        public void Debug(string msg, params object[] args)
         {
             var method = SearchInvoker();
             if (args.Length > 0)
-                return Debug(method, msg, args);
+                Debug(method, msg, args);
             else
-                return Debug(method, msg);
+                Debug(method, msg);
         }
 
         /// <summary>
@@ -215,12 +215,12 @@ namespace KOILib.Common.Log4
         /// <param name="msg"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task Debug(MethodBase method, string msg, params object[] args)
+        public virtual void Debug(MethodBase method, string msg, params object[] args)
         {
             if (args.Length > 0)
-                return Write(LogLevel.Debug, method, msg, args);
+                Write(LogLevel.Debug, method, msg, args);
             else
-                return Write(LogLevel.Debug, method, msg);
+                Write(LogLevel.Debug, method, msg);
         }
 
         /// <summary>
@@ -229,10 +229,10 @@ namespace KOILib.Common.Log4
         /// <param name="level"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public Task Write(LogLevel level, Exception ex)
+        public void Write(LogLevel level, Exception ex)
         {
             var method = SearchInvoker();
-            return Write(level, method, ex);
+            Write(level, method, ex);
         }
 
         /// <summary>
@@ -242,10 +242,10 @@ namespace KOILib.Common.Log4
         /// <param name="method">System.Reflection.MethodBase.GetCurrentMethod()</param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public virtual Task Write(LogLevel level, MethodBase method, Exception ex)
+        public virtual void Write(LogLevel level, MethodBase method, Exception ex)
         {
             var t = BuildMessage(method, ex.Message);
-            return WriteAsyncByCase(level, t, ex);
+            WriteByCase(level, t, ex);
         }
 
         /// <summary>
@@ -255,13 +255,13 @@ namespace KOILib.Common.Log4
         /// <param name="format"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public Task Write(LogLevel level, string format, params object[] args)
+        public void Write(LogLevel level, string format, params object[] args)
         {
             var method = SearchInvoker();
             if (args.Length > 0)
-                return Write(level, method, format, args);
+                Write(level, method, format, args);
             else
-                return Write(level, method, format);
+                Write(level, method, format);
         }
 
         /// <summary>
@@ -272,13 +272,13 @@ namespace KOILib.Common.Log4
         /// <param name="format"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public virtual Task Write(LogLevel level, MethodBase method, string format, params object[] args)
+        public virtual void Write(LogLevel level, MethodBase method, string format, params object[] args)
         {
             var t = BuildMessage(method, format);
             if (args.Length > 0)
-                return WriteAsyncByCase(level, t, args);
+                WriteByCase(level, t, args);
             else
-                return WriteAsyncByCase(level, t, default(Exception));
+                WriteByCase(level, t, default(Exception));
         }
 
         /// <summary>
@@ -317,75 +317,75 @@ namespace KOILib.Common.Log4
         }
 
         /// <summary>
-        /// ログ出力非同期タスク実行
+        /// ログ出力
         /// </summary>
         /// <param name="level"></param>
         /// <param name="msg"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        private async Task WriteAsyncByCase(LogLevel level, string msg, Exception ex)
+        private void WriteByCase(LogLevel level, string msg, Exception ex)
         {
             switch (level)
             {
                 case LogLevel.Debug:
                     if (ex == null)
-                        await Task.Run(() => _LogImpl.Debug(msg)).ConfigureAwait(false);
+                        _LogImpl.Debug(msg);
                     else
-                        await Task.Run(() => _LogImpl.Debug(msg, ex)).ConfigureAwait(false);
+                        _LogImpl.Debug(msg, ex);
                     break;
                 case LogLevel.Info:
                     if (ex == null)
-                        await Task.Run(() => _LogImpl.Info(msg)).ConfigureAwait(false);
+                        _LogImpl.Info(msg);
                     else
-                        await Task.Run(() => _LogImpl.Info(msg, ex)).ConfigureAwait(false);
+                        _LogImpl.Info(msg, ex);
                     break;
                 case LogLevel.Warn:
                     if (ex == null)
-                        await Task.Run(() => _LogImpl.Warn(msg)).ConfigureAwait(false);
+                        _LogImpl.Warn(msg);
                     else
-                        await Task.Run(() => _LogImpl.Warn(msg, ex)).ConfigureAwait(false);
+                        _LogImpl.Warn(msg, ex);
                     break;
                 case LogLevel.Error:
                     if (ex == null)
-                        await Task.Run(() => _LogImpl.Error(msg)).ConfigureAwait(false);
+                        _LogImpl.Error(msg);
                     else
-                        await Task.Run(() => _LogImpl.Error(msg, ex)).ConfigureAwait(false);
+                        _LogImpl.Error(msg, ex);
                     break;
                 case LogLevel.Fatal:
                     if (ex == null)
-                        await Task.Run(() => _LogImpl.Fatal(msg)).ConfigureAwait(false);
+                        _LogImpl.Fatal(msg);
                     else
-                        await Task.Run(() => _LogImpl.Fatal(msg, ex)).ConfigureAwait(false);
+                        _LogImpl.Fatal(msg, ex);
                     break;
             }
         }
 
         /// <summary>
-        /// ログ出力非同期タスク実行
+        /// ログ出力
         /// （～Format()版）
         /// </summary>
         /// <param name="level"></param>
         /// <param name="format"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        private async Task WriteAsyncByCase(LogLevel level, string format, object[] args)
+        private void WriteByCase(LogLevel level, string format, object[] args)
         {
             switch (level)
             {
                 case LogLevel.Debug:
-                    await Task.Run(() => _LogImpl.DebugFormat(format, args)).ConfigureAwait(false);
+                    _LogImpl.DebugFormat(format, args);
                     break;
                 case LogLevel.Info:
-                    await Task.Run(() => _LogImpl.InfoFormat(format, args)).ConfigureAwait(false);
+                    _LogImpl.InfoFormat(format, args);
                     break;
                 case LogLevel.Warn:
-                    await Task.Run(() => _LogImpl.WarnFormat(format, args)).ConfigureAwait(false);
+                    _LogImpl.WarnFormat(format, args);
                     break;
                 case LogLevel.Error:
-                    await Task.Run(() => _LogImpl.ErrorFormat(format, args)).ConfigureAwait(false);
+                    _LogImpl.ErrorFormat(format, args);
                     break;
                 case LogLevel.Fatal:
-                    await Task.Run(() => _LogImpl.FatalFormat(format, args)).ConfigureAwait(false);
+                    _LogImpl.FatalFormat(format, args);
                     break;
             }
         }

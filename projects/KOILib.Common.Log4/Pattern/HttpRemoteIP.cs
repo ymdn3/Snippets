@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -31,7 +33,7 @@ namespace KOILib.Common.Log4.Pattern
                 try
                 {
                     if (context.Request != null)
-                        ipaddr = context.Request.UserHostAddress;
+                        ipaddr = ConvertToIPv4(context.Request.UserHostAddress);
                 }
                 catch (HttpException)
                 {
@@ -39,6 +41,21 @@ namespace KOILib.Common.Log4.Pattern
                 }
             }
             writer.Write(ipaddr);
+        }
+
+        private string ConvertToIPv4(string addr)
+        {
+            var iphEntry = Dns.GetHostEntry(addr);
+            var ipv4 = iphEntry.AddressList
+                .FirstOrDefault((entry) => entry.AddressFamily == AddressFamily.InterNetwork);
+            if (ipv4 == default(IPAddress))
+            {
+                return addr;
+            }
+            else
+            {
+                return ipv4.ToString();
+            }
         }
 
     }
