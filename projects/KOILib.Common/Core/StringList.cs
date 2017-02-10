@@ -39,7 +39,7 @@ namespace KOILib.Common.Core
         /// <returns></returns>
         public StringList Add(string format, params object[] args)
         {
-            if (!string.IsNullOrEmpty(format))
+            if (format != null)
             {
                 if (args.Length > 0)
                     base.Add(string.Format(format, args));
@@ -57,7 +57,7 @@ namespace KOILib.Common.Core
         /// <returns></returns>
         public StringList Insert(int index, string format, params object[] args)
         {
-            if (!string.IsNullOrEmpty(format))
+            if (format != null)
             {
                 if (args.Length > 0)
                     base.Insert(index, string.Format(format, args));
@@ -97,6 +97,15 @@ namespace KOILib.Common.Core
         public StringList AddEmpty()
         {
             return this.Add("");
+        }
+
+        /// <summary>
+        /// Environment.NewLine を Add します
+        /// </summary>
+        /// <returns></returns>
+        public StringList AddLine()
+        {
+            return this.Add(Environment.NewLine);
         }
 
         /// <summary>
