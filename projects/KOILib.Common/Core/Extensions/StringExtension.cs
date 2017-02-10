@@ -10,6 +10,30 @@ namespace KOILib.Common.Core.Extensions
     {
 
         #region System.String
+
+        /// <summary>
+        /// この文字列と、指定した文字列のいずれかと値が同一かどうかを判断します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="values"></param>
+        /// <param name="comparisonType"></param>
+        /// <returns></returns>
+        public static bool EqualsAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
+        {
+            return values.Any(value => self.Equals(value, comparisonType));
+        }
+
+        /// <summary>
+        /// この文字列と、指定した文字列のいずれかと値が同一かどうかを判断します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static bool EqualsAny(this string self, IEnumerable<string> values)
+        {
+            return values.Any(value => self.Equals(value));
+        }
+
         /// <summary>
         /// この文字列インスタンスの先頭が、指定した文字列のいずれかに一致するかどうかを判断します。
         /// </summary>
