@@ -114,7 +114,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
             }
 
             var wrapper = new DbContextTransaction(this);
@@ -139,7 +140,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
             }
 
             var wrapper = new DbContextTransaction(this);
@@ -213,7 +215,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, BuildSQLLog(e));
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, BuildSQLLog(e));
             }
         }
 
@@ -222,7 +225,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, BuildSQLLog(e));
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, BuildSQLLog(e));
             }
         }
 
@@ -231,7 +235,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(LogLevel.Error, BuildSQLLog(e));
+                if (logging.Logger != null)
+                    logging.Logger.Write(LogLevel.Error, BuildSQLLog(e));
             }
         }
 
@@ -241,7 +246,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Rollback.", Transaction.GetHashCode());
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Rollback.", Transaction.GetHashCode());
             }
 
             Transaction = null;
@@ -253,7 +259,8 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Commit.", Transaction.GetHashCode());
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Commit.", Transaction.GetHashCode());
             }
 
             Transaction = null;
