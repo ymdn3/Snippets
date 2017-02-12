@@ -39,10 +39,45 @@ namespace KOILib.Common.Core.Extensions
         /// </summary>
         /// <param name="self"></param>
         /// <param name="values"></param>
+        /// <param name="comparisonType"></param>
+        /// <returns></returns>
+        public static bool StartsWithAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
+        {
+            return values.Any(value => self.StartsWith(value, comparisonType));
+        }
+
+        /// <summary>
+        /// この文字列インスタンスの先頭が、指定した文字列のいずれかに一致するかどうかを判断します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="values"></param>
         /// <returns></returns>
         public static bool StartsWithAny(this string self, IEnumerable<string> values)
         {
             return values.Any(value => self.StartsWith(value));
+        }
+
+        /// <summary>
+        /// この文字列インスタンスの末尾が、指定した文字列のいずれかに一致するかどうかを判断します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="values"></param>
+        /// <param name="comparisonType"></param>
+        /// <returns></returns>
+        public static bool EndsWithAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
+        {
+            return values.Any(value => self.EndsWith(value, comparisonType));
+        }
+
+        /// <summary>
+        /// この文字列インスタンスの末尾が、指定した文字列のいずれかに一致するかどうかを判断します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static bool EndsWithAny(this string self, IEnumerable<string> values)
+        {
+            return values.Any(value => self.EndsWith(value));
         }
 
         /// <summary>
