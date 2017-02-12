@@ -179,7 +179,10 @@ namespace KOILib.Common.Core
             var sb = new StringBuilder();
             for (var i = 0; i < this.Count; i++)
             {
-                if (!delimiterIsEmpty && i > 0)
+                //skip null
+                if (this[i] == null) continue;
+
+                if (!delimiterIsEmpty && sb.Length > 0)
                     sb.Append(DecorateInfo.Delimiter);
 
                 if (!preQuotIsEmpty)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -20,8 +21,9 @@ namespace KOILib.Common.DataAccess
     // http://bradwilson.typepad.com/blog/2009/10/aspnet-mvc-2-templates-part-2-modelmetadata.html
 
 
-    public abstract class DbContextModelBase<TModel>
+    public abstract class DbContextModelBase<TConnection, TModel>
         : DbContextModelBase
+        where TConnection : DbConnection
     {
         #region Static Members
         protected static StringList GetMappedTableName(string schema = null)
@@ -40,25 +42,25 @@ namespace KOILib.Common.DataAccess
         }
 
         /// <summary>
-        /// [NotMapped]と[Timestamp]をいずれも持たないプロパティ
+        /// [NotMapped][Timestamp][DatabaseGenerated]をいずれも持たないプロパティ
         /// （for INSERT対象列）
         /// </summary>
         /// <returns></returns>
         protected static StringList GetMappedFieldsWithoutTimestamp()
         {
             //INSERT対象列
-            return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute));
+            return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute), typeof(DatabaseGeneratedAttribute));
         }
 
         /// <summary>
-        /// [NotMapped]と[Timestamp]と[Key]をいずれも持たないプロパティ
+        /// [NotMapped][Timestamp][Key][DatabaseGenerated]をいずれも持たないプロパティ
         /// （for UPDATE対象列）
         /// </summary>
         /// <returns></returns>
         protected static StringList GetMappedFieldsWithoutKey()
         {
             //UPDATE対象列
-            return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute), typeof(KeyAttribute));
+            return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute), typeof(DatabaseGeneratedAttribute), typeof(KeyAttribute));
         }
 
         /// <summary>
@@ -101,34 +103,52 @@ namespace KOILib.Common.DataAccess
             sql.Add("SELECT");
 
             var fields = GetMappedFields();
-            sql.Add(fields.Decorate(",","[]").ToString());
+            sql.Add(fields.Decorate(",", "[]").ToString());
 
             sql.Add("FROM");
 
             var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".","[]").ToString());
+            sql.Add(table.Decorate(".", "[]").ToString());
 
             return sql;
         }
 
+        public static IEnumerable<TModel> SelectFullyFrom(DbContextBase db, string schema = null)
+        {
+            var sql = SelectSqlFully(schema).Decorate(" ").ToString();
+            return db.Query<TModel>(sql);
+        }
+
         protected static StringList BuildWhereCriteria(IEnumerable<string> fields, bool useOr = false)
         {
+            var bindprefix = BindPrefix();
             var criteria = new StringList();
             foreach (var field in fields)
             {
-                criteria.Add("{1}[{0}]=@{0}", field, (criteria.Count > 0 ? (useOr? " OR " : " AND ") : ""));
+                criteria.Add("{2}[{1}]={0}{1}", bindprefix, field, (criteria.Count > 0 ? (useOr? " OR " : " AND ") : ""));
             }
             return criteria;
         }
         protected static StringList BuildSetCriteria(IEnumerable<string> fields)
         {
+            var bindprefix = BindPrefix();
             var criteria = new StringList();
             foreach (var field in fields)
             {
-                criteria.Add("{1}[{0}]=@{0}", field, (criteria.Count > 0 ? "," : ""));
+                criteria.Add("{2}[{1}]={0}{1}", bindprefix, field, (criteria.Count > 0 ? "," : ""));
             }
             return criteria;
         }
+        protected static string BindPrefix()
+        {
+            switch (typeof(TConnection).FullName)
+            {
+                case "System.Data.SqlClient.SqlConnection":
+                    return "@";
+                default:
+                    return "%";
+            }
+        } 
         #endregion
 
         private bool HasField(string fieldname)
@@ -146,7 +166,7 @@ namespace KOILib.Common.DataAccess
                 return (pi.GetValue(this) != System.Activator.CreateInstance(pi.PropertyType)); //値型の場合
         }
 
-        public StringList SelectSql(string schema = null)
+        public StringList FindSql(string schema = null)
         {
             var sql = new StringList();
 
@@ -173,7 +193,7 @@ namespace KOILib.Common.DataAccess
 
         public TModel FindFrom(DbContextBase db)
         {
-            var sql = SelectSql().Decorate(" ").ToString();
+            var sql = FindSql().Decorate(" ").ToString();
             return db.QueryFirst<TModel>(sql, this);
         }
 
@@ -281,13 +301,17 @@ namespace KOILib.Common.DataAccess
         /// <returns></returns>
         internal static StringList GetMappedTableName<T>(string schema = null)
         {
-            var t = new StringList(schema);
+            string table = null;
             var attr = typeof(T).GetCustomAttributes<TableAttribute>();
             if (attr == null)
-                t.Add(typeof(T).Name);
+                table = typeof(T).Name;
             else
-                t.Add(attr.First().Name);
-            return t;
+            {
+                var aattr = attr.First();
+                schema = schema ?? aattr.Schema;
+                table = aattr.Name;
+            }
+            return new StringList(schema, table);
         }
 
         /// <summary>
