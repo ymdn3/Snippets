@@ -80,6 +80,18 @@ namespace KOILib.Common.Core.Extensions
             return values.Any(value => self.EndsWith(value));
         }
 
+        public static string Slice(this string self, int start, int end)
+        {
+            if (start < 0) start = self.Length + start;
+            if (end < 0) end = self.Length + end;
+            return self.Substring(start, end - start);
+        }
+
+        public static string Slice(this string self, int start)
+        {
+            return Slice(self, start, self.Length);
+        }
+
         /// <summary>
         /// 指定のエンコーディングで指定されたバイト長に収まるよう、文字列を左から切り出します。
         /// </summary>
