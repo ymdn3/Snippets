@@ -12,15 +12,6 @@ using KOILib.Common.Core.Extensions;
 
 namespace KOILib.Common.DataAccess
 {
-    // インスタンスからSQL生成するメソッドについて、
-    // 「値がないこと」の判断ができないので、条件生成などの箇所が正しく動作しない。
-    // モデル側の値がNull許容型であればある程度動作するが、MVC側のモデルバインドがおかしくなる
-    // 所持属性の判定も、リフレクションではなくModelMetadataから可能なのでは？
-
-    //about:指定可能な属性
-    // http://bradwilson.typepad.com/blog/2009/10/aspnet-mvc-2-templates-part-2-modelmetadata.html
-
-
     public abstract class DbContextModelBase<TConnection, TModel>
         : DbContextModelBase
         where TConnection : DbConnection
@@ -139,21 +130,20 @@ namespace KOILib.Common.DataAccess
             }
             return criteria;
         }
-        protected static string BindPrefix()
+        protected static char BindPrefix()
         {
             switch (typeof(TConnection).FullName)
             {
                 case "System.Data.SqlClient.SqlConnection":
-                    return "@";
+                    return '@';
                 default:
-                    return "%";
+                    return '%';
             }
         } 
         #endregion
 
-        private bool HasField(string fieldname)
+        protected virtual bool HasField(string fieldname)
         {
-
             //Modelがもつ指定の名前の値を取得する
             var pi = typeof(TModel).GetProperty(fieldname);
             if (pi == null)
@@ -163,10 +153,10 @@ namespace KOILib.Common.DataAccess
             else if (pi.PropertyType.IsNullable())
                 return (pi.GetValue(this) != null); //Null許容型
             else
-                return (pi.GetValue(this) != System.Activator.CreateInstance(pi.PropertyType)); //値型の場合
+                return !(pi.GetValue(this).Equals(System.Activator.CreateInstance(pi.PropertyType))); //値型の場合
         }
 
-        public StringList FindSql(string schema = null)
+        public virtual StringList FindSql(string schema = null)
         {
             var sql = new StringList();
 
@@ -197,7 +187,7 @@ namespace KOILib.Common.DataAccess
             return db.QueryFirst<TModel>(sql, this);
         }
 
-        public StringList InsertSql(string schema = null)
+        public virtual StringList InsertSql(string schema = null)
         {
             var sql = new StringList();
 
@@ -226,7 +216,7 @@ namespace KOILib.Common.DataAccess
             return db.Execute(sql, this);
         }
 
-        public StringList UpdateSql(string schema = null)
+        public virtual StringList UpdateSql(string schema = null)
         {
             var sql = new StringList();
 
@@ -258,7 +248,7 @@ namespace KOILib.Common.DataAccess
             return db.Execute(sql, this);
         }
 
-        public StringList DeleteSql(string schema = null)
+        public virtual StringList DeleteSql(string schema = null)
         {
             var sql = new StringList();
 
@@ -285,9 +275,6 @@ namespace KOILib.Common.DataAccess
             var sql = DeleteSql().Decorate(" ").ToString();
             return db.Execute(sql, this);
         }
-
-
-
 
     }
     public abstract class DbContextModelBase
