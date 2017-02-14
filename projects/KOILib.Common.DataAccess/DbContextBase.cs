@@ -197,6 +197,11 @@ namespace KOILib.Common.DataAccess
         }
         #endregion
 
+        public DbConnection InnerConnection
+        {
+            get { return this.Connection.InnerConnection; }
+        }
+
         protected void InitConnection(DbConnection conn)
         {
             var prof = default(TraceDbProfiler);

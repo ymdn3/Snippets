@@ -45,6 +45,7 @@
     <Compile Include="Core\EnumEx.cs" />
     <Compile Include="Core\Extensions\AppSettingsReaderExtension.cs" />
     <Compile Include="Core\Extensions\CharExtension.cs" />
+    <Compile Include="Core\Extensions\DataTableExtension.cs" />
     <Compile Include="Core\Extensions\DateTimeExtension.cs" />
     <Compile Include="Core\Extensions\EnumExtension.cs" />
     <Compile Include="Core\Extensions\FileInfoExtension.cs" />

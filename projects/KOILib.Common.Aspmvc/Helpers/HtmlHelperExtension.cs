@@ -13,14 +13,19 @@ namespace KOILib.Common.Aspmvc.Helpers
 {
     public static class HtmlHelperExtension
     {
-        public static IHtmlString Image<TModel>(this HtmlHelper<TModel> self, byte[] byteArray, string contentType = null)
+        public static IHtmlString Image<TModel>(this HtmlHelper<TModel> self, byte[] byteArray, dynamic attrib, string contentType = null)
         {
             var base64 = Convert.ToBase64String(byteArray);
             var imgsrc = String.Format("data:{0};base64,{1}", contentType ?? "application/image", base64);
 
             var tb = new TagBuilder("img");
+            if (attrib != null) tb.MergeAttributes(new System.Web.Routing.RouteValueDictionary(attrib));
             tb.Attributes.Add("src", imgsrc);
             return MvcHtmlString.Create(tb.ToString(TagRenderMode.SelfClosing));
+        }
+        public static IHtmlString Image<TModel>(this HtmlHelper<TModel> self, byte[] byteArray, string contentType = null)
+        {
+            return Image(self, byteArray, null, contentType);
         }
 
 
