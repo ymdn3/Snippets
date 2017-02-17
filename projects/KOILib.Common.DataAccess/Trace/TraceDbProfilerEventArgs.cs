@@ -38,7 +38,7 @@ namespace KOILib.Common.DataAccess.Trace
         public TraceDbProfilerEventArgs(Stopwatch stopwatch, DateTime date, IDbCommand command, SqlExecuteType executeType)
         {
             Date = date;
-            Elapsed = stopwatch.ElapsedMilliseconds;
+            Elapsed = stopwatch == null ? 0 : stopwatch.ElapsedMilliseconds;
             ExecuteType = executeType;
             Command = command;
         }

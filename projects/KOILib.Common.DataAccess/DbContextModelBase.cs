@@ -9,14 +9,20 @@ using System.Text;
 using System.Threading.Tasks;
 using KOILib.Common.Core;
 using KOILib.Common.Core.Extensions;
+using Newtonsoft.Json;
 
 namespace KOILib.Common.DataAccess
 {
     public abstract class DbContextModelBase<TConnection, TModel>
-        : DbContextModelBase
+        : DbContextModelBase, ICloneable
         where TConnection : DbConnection
     {
         #region Static Members
+        /// <summary>
+        /// テーブル名を取得します
+        /// </summary>
+        /// <param name="schema">指定すると、テーブル名修飾子として結果にAppendします</param>
+        /// <returns></returns>
         protected static StringList GetMappedTableName(string schema = null)
         {
             return GetMappedTableName<TModel>(schema);
@@ -87,6 +93,11 @@ namespace KOILib.Common.DataAccess
             return GetFieldsAny<TModel>(typeof(TimestampAttribute));
         }
 
+        /// <summary>
+        /// 全行をSELECTするSQLを生成します
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public static StringList SelectSqlFully(string schema = null)
         {
             var sql = new StringList();
@@ -104,12 +115,24 @@ namespace KOILib.Common.DataAccess
             return sql;
         }
 
+        /// <summary>
+        /// 全行をSELECTします
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public static IEnumerable<TModel> SelectFullyFrom(DbContextBase db, string schema = null)
         {
             var sql = SelectSqlFully(schema).Decorate(" ").ToString();
             return db.Query<TModel>(sql);
         }
 
+        /// <summary>
+        /// WHERE句を組み立てます
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="useOr"></param>
+        /// <returns></returns>
         protected static StringList BuildWhereCriteria(IEnumerable<string> fields, bool useOr = false)
         {
             var bindprefix = BindPrefix();
@@ -120,6 +143,11 @@ namespace KOILib.Common.DataAccess
             }
             return criteria;
         }
+        /// <summary>
+        /// SET句を組み立てます(UPDATE用)
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         protected static StringList BuildSetCriteria(IEnumerable<string> fields)
         {
             var bindprefix = BindPrefix();
@@ -130,6 +158,10 @@ namespace KOILib.Common.DataAccess
             }
             return criteria;
         }
+        /// <summary>
+        /// バインドパラメータのプリフィックス文字を返します
+        /// </summary>
+        /// <returns></returns>
         protected static char BindPrefix()
         {
             switch (typeof(TConnection).FullName)
@@ -139,9 +171,26 @@ namespace KOILib.Common.DataAccess
                 default:
                     return '%';
             }
-        } 
+        }
         #endregion
 
+        #region IClonable Implements
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public object Clone()
+        {
+            //JSON経由でコピー
+            return JsonConvert.DeserializeObject(JsonConvert.SerializeObject(this), this.GetType());
+        }
+        #endregion
+
+        /// <summary>
+        /// 指定のプロパティがdefault値と異なる値をもつかどうか
+        /// </summary>
+        /// <param name="fieldname"></param>
+        /// <returns></returns>
         protected virtual bool HasField(string fieldname)
         {
             //Modelがもつ指定の名前の値を取得する
@@ -153,9 +202,14 @@ namespace KOILib.Common.DataAccess
             else if (pi.PropertyType.IsNullable())
                 return (pi.GetValue(this) != null); //Null許容型
             else
-                return !(pi.GetValue(this).Equals(System.Activator.CreateInstance(pi.PropertyType))); //値型の場合
+                return !(pi.GetValue(this).Equals(Activator.CreateInstance(pi.PropertyType))); //値型の場合
         }
 
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としたSELECT SQLを生成します
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public virtual StringList FindSql(string schema = null)
         {
             var sql = new StringList();
@@ -181,12 +235,34 @@ namespace KOILib.Common.DataAccess
             return sql;
         }
 
-        public TModel FindFrom(DbContextBase db)
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としてSELECTし、先頭の1件を返します
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public TModel FindFirstFrom(DbContextBase db)
         {
             var sql = FindSql().Decorate(" ").ToString();
             return db.QueryFirst<TModel>(sql, this);
         }
 
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としてSELECTし、全件を返します
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IEnumerable<TModel> FindFrom(DbContextBase db)
+        {
+            var sql = FindSql().Decorate(" ").ToString();
+            return db.Query<TModel>(sql, this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしたINSERT SQLを生成します。
+        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public virtual StringList InsertSql(string schema = null)
         {
             var sql = new StringList();
@@ -197,7 +273,7 @@ namespace KOILib.Common.DataAccess
             var table = GetMappedTableName(schema);
             sql.Add(table.Decorate(".", "[]").ToString());
 
-            //インスタンスプロパティのTimestamp属性で、値を持つ場合、そのフィールドをINSERT対象列とする
+            //インスタンスプロパティがTimestamp属性でなく、値を持つ場合、そのフィールドをINSERT対象列とする
             var fields = GetMappedFieldsWithoutTimestamp().Where(field => HasField(field));
             var valueFields = new StringList(fields);
 
@@ -210,12 +286,25 @@ namespace KOILib.Common.DataAccess
             return sql;
         }
 
+        /// <summary>
+        /// default値でないプロパティをソースとしてINSERTします。
+        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
         public int InsertTo(DbContextBase db)
         {
             var sql = InsertSql().Decorate(" ").ToString();
             return db.Execute(sql, this);
         }
 
+        /// <summary>
+        /// default値でないプロパティをソースとしたUPDATE SQLを生成します。
+        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public virtual StringList UpdateSql(string schema = null)
         {
             var sql = new StringList();
@@ -242,12 +331,25 @@ namespace KOILib.Common.DataAccess
             return sql;
         }
 
+        /// <summary>
+        /// default値でないプロパティをソースとしてUPDATEします。
+        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
         public int UpdateTo(DbContextBase db)
         {
             var sql = UpdateSql().Decorate(" ").ToString();
             return db.Execute(sql, this);
         }
 
+        /// <summary>
+        /// default値でないプロパティをソースとしたDELETE SQLを生成します。
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
         public virtual StringList DeleteSql(string schema = null)
         {
             var sql = new StringList();
@@ -270,6 +372,12 @@ namespace KOILib.Common.DataAccess
             return sql;
         }
 
+        /// <summary>
+        /// default値でないプロパティをソースとしてDELETEします。
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
         public int DeleteFrom(DbContextBase db)
         {
             var sql = DeleteSql().Decorate(" ").ToString();
@@ -284,7 +392,7 @@ namespace KOILib.Common.DataAccess
         /// マッピング対象のテーブル名を取得します
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="schema">指定すると、テーブル名修飾子として結果にInsertします</param>
+        /// <param name="schema">指定すると、テーブル名修飾子として結果にAppendします</param>
         /// <returns></returns>
         internal static StringList GetMappedTableName<T>(string schema = null)
         {
@@ -298,11 +406,14 @@ namespace KOILib.Common.DataAccess
                 schema = schema ?? aattr.Schema;
                 table = aattr.Name;
             }
-            return new StringList(schema, table);
+            if (string.IsNullOrEmpty(schema))
+                return new StringList(table);
+            else
+                return new StringList(schema, table);
         }
 
         /// <summary>
-        /// 指定した属性型の「すべてを含まない」DBフィールド名を列挙します
+        /// 指定した属性型の「すべてを含まない」フィールド名を列挙します
         /// </summary>
         /// <param name="nor_attributes">属性型</param>
         /// <returns></returns>
@@ -316,7 +427,7 @@ namespace KOILib.Common.DataAccess
         }
 
         /// <summary>
-        /// 指定した属性型の「いずれかを含む」DBフィールド名を列挙します
+        /// 指定した属性型の「いずれかを含む」フィールド名を列挙します
         /// </summary>
         /// <param name="any_attributes">属性型</param>
         /// <returns></returns>
@@ -328,8 +439,19 @@ namespace KOILib.Common.DataAccess
                 .Select(f => f.Name);
             return new StringList(fields);
         }
-        #endregion
 
+        /// <summary>
+        /// すべてのフィールド名を列挙します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        protected internal static StringList GetFields<T>()
+        {
+            var fields = typeof(T).GetProperties()
+                .Select(f => f.Name);
+            return new StringList(fields);
+        }
+        #endregion
 
     }
 

@@ -13,6 +13,7 @@ namespace KOILib.Common.DataAccess.Trace
     internal class TraceDbProfiler
         : IDbProfiler
     {
+        public event EventHandler<TraceDbProfilerEventArgs> ExecuteBeginning;
         public event EventHandler<TraceDbProfilerErrorEventArgs> ErrorOccurred;
         public event EventHandler<TraceDbProfilerEventArgs> ExecuteFinished;
         public event EventHandler<TraceDbProfilerEventArgs> ReaderFinished;
@@ -28,6 +29,16 @@ namespace KOILib.Common.DataAccess.Trace
         public void ExecuteStart(IDbCommand profiledDbCommand, SqlExecuteType executeType)
         {
             _stopwatch = Stopwatch.StartNew();
+
+            var e = new TraceDbProfilerEventArgs(
+                stopwatch: null,
+                date: DateTime.Now,
+                command: profiledDbCommand,
+                executeType: executeType
+            );
+
+            //event raise
+            ExecuteBeginning(this, e);
         }
 
         public void OnError(IDbCommand profiledDbCommand, SqlExecuteType executeType, Exception exception)

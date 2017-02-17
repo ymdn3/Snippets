@@ -80,6 +80,13 @@ namespace KOILib.Common.Core.Extensions
             return values.Any(value => self.EndsWith(value));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public static string Slice(this string self, int start, int end)
         {
             if (start < 0) start = self.Length + start;
@@ -87,6 +94,12 @@ namespace KOILib.Common.Core.Extensions
             return self.Substring(start, end - start);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="start"></param>
+        /// <returns></returns>
         public static string Slice(this string self, int start)
         {
             return Slice(self, start, self.Length);
@@ -161,6 +174,24 @@ namespace KOILib.Common.Core.Extensions
         public static string CloseWhitespace(this string self)
         {
             return System.Text.RegularExpressions.Regex.Replace(self, @" * ('[^']*'|[^ ])", " $1", System.Text.RegularExpressions.RegexOptions.Compiled);
+        }
+
+        /// <summary>
+        /// 文字列値を、カンマまたは改行区切りとした配列に変換します。
+        /// ホワイトスペース(全半角スペースとタブ文字)はサプレスされ、空文字列の配列要素は結果から除外されます。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
+        public static string[] SplitByCommaOrFeed(this string self)
+        {
+            if (string.IsNullOrWhiteSpace(self))
+                return new string[] { };
+
+            //空白とタブの削除
+            var value = System.Text.RegularExpressions.Regex.Replace(self, @"[ 　\t]", "", System.Text.RegularExpressions.RegexOptions.Compiled);
+            //改行・カンマ分離
+            var values = value.Split(new char[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return values;
         }
         #endregion
 

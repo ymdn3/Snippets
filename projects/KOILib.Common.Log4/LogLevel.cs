@@ -11,6 +11,7 @@ namespace KOILib.Common.Log4
     /// </summary>
     public enum LogLevel
     {
+        None,
         Debug,
         Info,
         Warn,

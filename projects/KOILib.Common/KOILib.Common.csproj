@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CmdParameter.cs" />
+    <Compile Include="Core\CompareSelector.cs" />
     <Compile Include="Core\Consts.cs" />
     <Compile Include="Core\EnumEx.cs" />
     <Compile Include="Core\Extensions\AppSettingsReaderExtension.cs" />

@@ -37,22 +37,49 @@ namespace KOILib.Common.DataAccess
     {
         #region Static Members
         /// <summary>
-        /// SQLログテキストを構築します
+        /// SQLログテキストを構築します（標準）
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
         private static string BuildSQLLog(TraceDbProfilerEventArgs e)
         {
             var sb = new StringBuilder();
-            sb.AppendFormat("[SQL:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] ", e.Command.GetHashCode());
-
+            SQLLogAppendHead(sb, e);
+            sb.Append(" ");
+            SQLLogAppendCommand(sb, e);
+            sb.Append(" ");
+            SQLLogAppendParameter(sb, e);
+            return sb.ToString();
+        }
+        /// <summary>
+        /// SQL実行済みログを構築します
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private static string BuildSQLLogFinish(TraceDbProfilerEventArgs e)
+        {
+            var sb = new StringBuilder();
+            SQLLogAppendHead(sb, e);
+            sb.Append(" ");
+            SQLLogAppendStopwatch(sb, e);
+            return sb.ToString();
+        }
+        private static void SQLLogAppendHead(StringBuilder sb, TraceDbProfilerEventArgs e)
+        {
+            sb.AppendFormat("[SQL:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}]", e.Command.GetHashCode());
+        }
+        private static void SQLLogAppendCommand(StringBuilder sb, TraceDbProfilerEventArgs e)
+        {
             sb.Append(e.CommandText);
-
-            //パラメータ
+        }
+        private static void SQLLogAppendParameter(StringBuilder sb, TraceDbProfilerEventArgs e)
+        {
             if (e.Parameters.Count > 0)
                 sb.AppendFormat("/*{{{0}}}*/", e.Parameters.ToLogString());
-
-            return sb.ToString();
+        }
+        private static void SQLLogAppendStopwatch(StringBuilder sb, TraceDbProfilerEventArgs e)
+        {
+            sb.AppendFormat("{0} msec elaped.", e.Elapsed);
         }
         #endregion
 
@@ -115,7 +142,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
             }
 
             var wrapper = new DbContextTransaction(this);
@@ -141,7 +168,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Begins.", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
             }
 
             var wrapper = new DbContextTransaction(this);
@@ -189,6 +216,7 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 var prof = (TraceDbProfiler)Connection.Profiler;
+                prof.ExecuteBeginning -= DbContext_ExecuteBeginning;
                 prof.ErrorOccurred -= DbContext_ErrorOccurred;
                 prof.ExecuteFinished -= DbContext_ExecuteFinished;
                 prof.ReaderFinished -= DbContext_ReaderFinished;
@@ -208,14 +236,15 @@ namespace KOILib.Common.DataAccess
             if (this is ILog4Logging)
             {
                 prof = new TraceDbProfiler();
+                prof.ExecuteBeginning += DbContext_ExecuteBeginning;
                 prof.ErrorOccurred += DbContext_ErrorOccurred;
                 prof.ExecuteFinished += DbContext_ExecuteFinished;
                 prof.ReaderFinished += DbContext_ReaderFinished;
             }
             Connection = new ProfiledDbConnection(conn, prof);
         }
-        
-        private void DbContext_ReaderFinished(object sender, TraceDbProfilerEventArgs e)
+
+        private void DbContext_ExecuteBeginning(object sender, TraceDbProfilerEventArgs e)
         {
             if (this is ILog4Logging)
             {
@@ -225,13 +254,23 @@ namespace KOILib.Common.DataAccess
             }
         }
 
+        private void DbContext_ReaderFinished(object sender, TraceDbProfilerEventArgs e)
+        {
+            if (this is ILog4Logging)
+            {
+                var logging = (ILog4Logging)this;
+                if (logging.Logger != null && logging.LogLevel != LogLevel.None)
+                    logging.Logger.Write(LogLevel.Debug, BuildSQLLogFinish(e));
+            }
+        }
+
         private void DbContext_ExecuteFinished(object sender, TraceDbProfilerEventArgs e)
         {
             if (this is ILog4Logging)
             {
                 var logging = (ILog4Logging)this;
-                if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, BuildSQLLog(e));
+                if (logging.Logger != null && logging.LogLevel != LogLevel.None)
+                    logging.Logger.Write(LogLevel.Debug, BuildSQLLogFinish(e));
             }
         }
 
@@ -252,7 +291,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Rollback.", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] ROLLBACK", Transaction.GetHashCode());
             }
 
             Transaction = null;
@@ -265,7 +304,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] Transaction Commit.", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] COMMIT", Transaction.GetHashCode());
             }
 
             Transaction = null;
