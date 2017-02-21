@@ -79,7 +79,7 @@ namespace KOILib.Common.DataAccess
         }
         private static void SQLLogAppendStopwatch(StringBuilder sb, TraceDbProfilerEventArgs e)
         {
-            sb.AppendFormat("{0} msec elaped.", e.Elapsed);
+            sb.AppendFormat("{0} msec elapsed.", e.Elapsed);
         }
         #endregion
 
