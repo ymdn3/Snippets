@@ -23,7 +23,7 @@ namespace KOILib.Common.DataAccess
         /// </summary>
         /// <param name="schema">指定すると、テーブル名修飾子として結果にAppendします</param>
         /// <returns></returns>
-        protected static StringList GetMappedTableName(string schema = null)
+        public static IEnumerable<string> GetMappedTableName(string schema = null)
         {
             return GetMappedTableName<TModel>(schema);
         }
@@ -32,7 +32,7 @@ namespace KOILib.Common.DataAccess
         /// [NotMapped]を持たないプロパティ
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetMappedFields()
+        public static IEnumerable<string> GetMappedFields()
         {
             //全列
             return GetFieldsNor<TModel>(typeof(NotMappedAttribute));
@@ -43,7 +43,7 @@ namespace KOILib.Common.DataAccess
         /// （for INSERT対象列）
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetMappedFieldsWithoutTimestamp()
+        public static IEnumerable<string> GetMappedFieldsWithoutTimestamp()
         {
             //INSERT対象列
             return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute), typeof(DatabaseGeneratedAttribute));
@@ -54,7 +54,7 @@ namespace KOILib.Common.DataAccess
         /// （for UPDATE対象列）
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetMappedFieldsWithoutKey()
+        public static IEnumerable<string> GetMappedFieldsWithoutKey()
         {
             //UPDATE対象列
             return GetFieldsNor<TModel>(typeof(NotMappedAttribute), typeof(TimestampAttribute), typeof(DatabaseGeneratedAttribute), typeof(KeyAttribute));
@@ -65,7 +65,7 @@ namespace KOILib.Common.DataAccess
         /// （for 主キーと行バージョンによる更新条件）
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetKeyAndTimestampFields()
+        public static IEnumerable<string> GetKeyAndTimestampFields()
         {
             //更新条件（主キーと行バージョン）
             return GetFieldsAny<TModel>(typeof(KeyAttribute), typeof(TimestampAttribute));
@@ -76,7 +76,7 @@ namespace KOILib.Common.DataAccess
         /// （for 主キーによる更新条件）
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetKeyFields()
+        public static IEnumerable<string> GetKeyFields()
         {
             //更新条件（主キー）
             return GetFieldsAny<TModel>(typeof(KeyAttribute));
@@ -87,31 +87,32 @@ namespace KOILib.Common.DataAccess
         /// （for 行バージョンによる更新条件）
         /// </summary>
         /// <returns></returns>
-        protected static StringList GetTimestampFields()
+        public static IEnumerable<string> GetTimestampFields()
         {
             //更新条件（行バージョン）
             return GetFieldsAny<TModel>(typeof(TimestampAttribute));
         }
 
         /// <summary>
+        /// すべてのフィールド名を列挙します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<string> GetFields()
+        {
+            return GetFields<TModel>();
+        }
+
+        /// <summary>
         /// 全行をSELECTするSQLを生成します
         /// </summary>
+        /// <param name="orders"></param>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public static StringList SelectSqlFully(string schema = null)
+        public static StringList SelectSqlFully(IEnumerable<string> orders = null, string schema = null)
         {
-            var sql = new StringList();
-
-            sql.Add("SELECT");
-
             var fields = GetMappedFields();
-            sql.Add(fields.Decorate(",", "[]").ToString());
-
-            sql.Add("FROM");
-
-            var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".", "[]").ToString());
-
+            var sql = SelectSql<TModel>(fields, null, orders, schema);
             return sql;
         }
 
@@ -119,58 +120,32 @@ namespace KOILib.Common.DataAccess
         /// 全行をSELECTします
         /// </summary>
         /// <param name="db"></param>
+        /// <param name="orders"></param>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public static IEnumerable<TModel> SelectFullyFrom(DbContextBase db, string schema = null)
+        public static IEnumerable<TModel> SelectFullyFrom(DbContextBase db, IEnumerable<string> orders = null, string schema = null)
         {
-            var sql = SelectSqlFully(schema).Decorate(" ").ToString();
-            return db.Query<TModel>(sql);
+            var sql = SelectSqlFully(orders, schema);
+            return db.Query<TModel>(sql.ToDecorateString(" "));
         }
 
         /// <summary>
-        /// WHERE句を組み立てます
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="useOr"></param>
-        /// <returns></returns>
-        protected static StringList BuildWhereCriteria(IEnumerable<string> fields, bool useOr = false)
-        {
-            var bindprefix = BindPrefix();
-            var criteria = new StringList();
-            foreach (var field in fields)
-            {
-                criteria.Add("{2}[{1}]={0}{1}", bindprefix, field, (criteria.Count > 0 ? (useOr? " OR " : " AND ") : ""));
-            }
-            return criteria;
-        }
-        /// <summary>
-        /// SET句を組み立てます(UPDATE用)
+        /// バインドパラメータとイコール記号の式（FIELDNAME=%FIELDNAME）を組み立てます
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        protected static StringList BuildSetCriteria(IEnumerable<string> fields)
+        protected static IEnumerable<string> BuildEqExpressions(IEnumerable<string> fields)
         {
-            var bindprefix = BindPrefix();
-            var criteria = new StringList();
-            foreach (var field in fields)
-            {
-                criteria.Add("{2}[{1}]={0}{1}", bindprefix, field, (criteria.Count > 0 ? "," : ""));
-            }
-            return criteria;
+            return BuildEqExpressions<TConnection>(fields);
         }
+
         /// <summary>
         /// バインドパラメータのプリフィックス文字を返します
         /// </summary>
         /// <returns></returns>
         protected static char BindPrefix()
         {
-            switch (typeof(TConnection).FullName)
-            {
-                case "System.Data.SqlClient.SqlConnection":
-                    return '@';
-                default:
-                    return '%';
-            }
+            return BindPrefix<TConnection>();
         }
         #endregion
 
@@ -186,12 +161,190 @@ namespace KOILib.Common.DataAccess
         }
         #endregion
 
+        protected string[] _orders;
         /// <summary>
-        /// 指定のプロパティがdefault値と異なる値をもつかどうか
+        /// FindSql()メソッドが生成するSQLに、ORDER BY句が指定されるよう設定します。
+        /// </summary>
+        /// <param name="orders"></param>
+        /// <returns></returns>
+        public DbContextModelBase<TConnection, TModel> OrderBy(params string[] orders)
+        {
+            _orders = orders;
+            return this;
+        }
+
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としたSELECT SQLを生成します
+        /// </summary>
+        /// <param name="orders"></param>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        public virtual StringList FindSql(IEnumerable<string> orders = null, string schema = null)
+        {
+            var fields = GetMappedFields();
+
+            //インスタンスプロパティが値を持つ場合、そのフィールドを絞り込み条件とする
+            var whereFields = fields.Where(field => HasValue(field));
+            var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
+
+            var sql = SelectSql<TModel>(fields, whereCriteria, orders ?? _orders, schema);
+            return sql;
+        }
+
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としてSELECTし、全件を返します
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="orders">ORDER BYに指定する項目</param>
+        /// <returns></returns>
+        public IEnumerable<TModel> FindFrom(DbContextBase db, IEnumerable<string> orders)
+        {
+            var sql = FindSql(orders: orders);
+            return db.Query<TModel>(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としてSELECTし、全件を返します
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public IEnumerable<TModel> FindFrom(DbContextBase db)
+        {
+            var sql = FindSql();
+            return db.Query<TModel>(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをWHERE条件としてSELECTし、先頭の1件を返します
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public TModel FindFirstFrom(DbContextBase db)
+        {
+            var sql = FindSql();
+            return db.QueryFirst<TModel>(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしたINSERT SQLを生成します。
+        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        public virtual StringList InsertSql(string schema = null)
+        {
+            //インスタンスプロパティがTimestamp属性でなく、値を持つ場合、そのフィールドをINSERT対象列とする
+            var fields = GetMappedFieldsWithoutTimestamp().Where(field => HasValue(field));
+
+            //バインドパラメータのプリフィックスを付ける
+            var prefix = BindPrefix();
+            var values = fields.Select((f) => prefix + f);
+
+            var sql = InsertSql<TModel>(fields, values, schema);
+            return sql;
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしてINSERTします。
+        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public int InsertTo(DbContextBase db)
+        {
+            var sql = InsertSql();
+            return db.Execute(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしたUPDATE SQLを生成します。
+        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        public virtual StringList UpdateSql(string schema = null)
+        {
+            //インスタンスプロパティのKeyとTimestamp属性を除くフィールドをSET対象列とする
+            var setFields = GetMappedFieldsWithoutKey();
+            var setStatement = BuildSetStatement(setFields);
+
+            //インスタンスプロパティがKeyまたはTimestamp属性で、値を持つ場合、そのフィールドを絞り込み条件とする
+            var whereFields = GetKeyAndTimestampFields().Where(field => HasValue(field));
+            var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
+
+            var sql = UpdateSql<TModel>(setStatement, whereCriteria, schema);
+            return sql;
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしてUPDATEします。
+        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public int UpdateTo(DbContextBase db)
+        {
+            var sql = UpdateSql();
+            return db.Execute(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしたDELETE SQLを生成します。
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        public virtual StringList DeleteSql(string schema = null)
+        {
+            //インスタンスプロパティがKeyまたはTimestamp属性の値を持つ場合、そのフィールドを絞り込み条件とする
+            var whereFields = GetKeyAndTimestampFields().Where(field => HasValue(field));
+            var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
+
+            var sql = DeleteSql<TModel>(whereCriteria, schema);
+            return sql;
+        }
+
+        /// <summary>
+        /// default値でないプロパティをソースとしてDELETEします。
+        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
+        /// </summary>
+        /// <param name="db"></param>
+        /// <returns></returns>
+        public int DeleteFrom(DbContextBase db)
+        {
+            var sql = DeleteSql();
+            return db.Execute(sql.ToDecorateString(" "), this);
+        }
+
+        /// <summary>
+        /// WHERE句を組み立てます
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <param name="useOR"></param>
+        /// <returns></returns>
+        public virtual string BuildWhereCriteria(IEnumerable<string> fields, bool useOR)
+        {
+            return BuildWhereCriteria<TConnection>(fields, useOR);
+        }
+
+        /// <summary>
+        /// SET句を組み立てます(UPDATE用)
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public virtual String BuildSetStatement(IEnumerable<string> fields)
+        {
+            return BuildSetStatement<TConnection>(fields);
+        }
+
+        /// <summary>
+        /// 指定のプロパティが、default値と異なる値をもつかどうか
         /// </summary>
         /// <param name="fieldname"></param>
         /// <returns></returns>
-        protected virtual bool HasField(string fieldname)
+        protected bool HasValue(string fieldname)
         {
             //Modelがもつ指定の名前の値を取得する
             var pi = typeof(TModel).GetProperty(fieldname);
@@ -205,196 +358,269 @@ namespace KOILib.Common.DataAccess
                 return !(pi.GetValue(this).Equals(Activator.CreateInstance(pi.PropertyType))); //値型の場合
         }
 
-        /// <summary>
-        /// default値でないプロパティをWHERE条件としたSELECT SQLを生成します
-        /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
-        public virtual StringList FindSql(string schema = null)
-        {
-            var sql = new StringList();
-
-            sql.Add("SELECT");
-
-            var fields = GetMappedFields();
-            sql.Add(fields.Decorate(",", "[]").ToString());
-
-            sql.Add("FROM");
-
-            var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".", "[]").ToString());
-
-            //インスタンスプロパティが値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = fields.Where(field => HasField(field));
-            if (whereFields.Count() > 0)
-            {
-                sql.Add("WHERE");
-                sql.AddRange(BuildWhereCriteria(whereFields));
-            }
-
-            return sql;
-        }
-
-        /// <summary>
-        /// default値でないプロパティをWHERE条件としてSELECTし、先頭の1件を返します
-        /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
-        public TModel FindFirstFrom(DbContextBase db)
-        {
-            var sql = FindSql().Decorate(" ").ToString();
-            return db.QueryFirst<TModel>(sql, this);
-        }
-
-        /// <summary>
-        /// default値でないプロパティをWHERE条件としてSELECTし、全件を返します
-        /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
-        public IEnumerable<TModel> FindFrom(DbContextBase db)
-        {
-            var sql = FindSql().Decorate(" ").ToString();
-            return db.Query<TModel>(sql, this);
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしたINSERT SQLを生成します。
-        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
-        /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
-        public virtual StringList InsertSql(string schema = null)
-        {
-            var sql = new StringList();
-
-            sql.Add("INSERT");
-            sql.Add("INTO");
-
-            var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".", "[]").ToString());
-
-            //インスタンスプロパティがTimestamp属性でなく、値を持つ場合、そのフィールドをINSERT対象列とする
-            var fields = GetMappedFieldsWithoutTimestamp().Where(field => HasField(field));
-            var valueFields = new StringList(fields);
-
-            sql.Add("({0})", valueFields.Decorate(",", "[]").ToString());
-
-            sql.Add("VALUES");
-
-            sql.Add("({0})", valueFields.Decorate(",", '@', StringListQuotePositions.Pre).ToString());
-
-            return sql;
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしてINSERTします。
-        /// [NotMapped][Timestamp][DatabaseGenerated]属性は対象外とします。
-        /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
-        public int InsertTo(DbContextBase db)
-        {
-            var sql = InsertSql().Decorate(" ").ToString();
-            return db.Execute(sql, this);
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしたUPDATE SQLを生成します。
-        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
-        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
-        /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
-        public virtual StringList UpdateSql(string schema = null)
-        {
-            var sql = new StringList();
-
-            sql.Add("UPDATE");
-
-            var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".","[]").ToString());
-
-            sql.Add("SET");
-
-            //インスタンスプロパティのKeyとTimestamp属性を除くフィールドをSET対象列とする
-            var setFields = GetMappedFieldsWithoutKey();
-            sql.AddRange(BuildSetCriteria(setFields));
-
-            //インスタンスプロパティがKeyまたはTimestamp属性で、値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = GetKeyAndTimestampFields().Where(field => HasField(field));
-            if (whereFields.Count() > 0)
-            {
-                sql.Add("WHERE");
-                sql.AddRange(BuildWhereCriteria(whereFields));
-            }
-
-            return sql;
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしてUPDATEします。
-        /// [NotMapped][Timestamp][Key][DatabaseGenerated]属性はSET句の対象外、
-        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
-        /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
-        public int UpdateTo(DbContextBase db)
-        {
-            var sql = UpdateSql().Decorate(" ").ToString();
-            return db.Execute(sql, this);
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしたDELETE SQLを生成します。
-        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
-        /// </summary>
-        /// <param name="schema"></param>
-        /// <returns></returns>
-        public virtual StringList DeleteSql(string schema = null)
-        {
-            var sql = new StringList();
-
-            sql.Add("DELETE");
-
-            sql.Add("FROM");
-
-            var table = GetMappedTableName(schema);
-            sql.Add(table.Decorate(".","[]").ToString());
-
-            //インスタンスプロパティがKeyまたはTimestamp属性の値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = GetKeyAndTimestampFields().Where(field => HasField(field));
-            if (whereFields.Count() > 0)
-            {
-                sql.Add("WHERE");
-                sql.AddRange(BuildWhereCriteria(whereFields));
-            }
-
-            return sql;
-        }
-
-        /// <summary>
-        /// default値でないプロパティをソースとしてDELETEします。
-        /// [Key][Timestamp]属性のいずれかをWHERE句の対象とします。
-        /// </summary>
-        /// <param name="db"></param>
-        /// <returns></returns>
-        public int DeleteFrom(DbContextBase db)
-        {
-            var sql = DeleteSql().Decorate(" ").ToString();
-            return db.Execute(sql, this);
-        }
-
     }
+
     public abstract class DbContextModelBase
     {
         #region Static Members
+        /// <summary>
+        /// 標準的なSELECT SQLを生成します。
+        /// </summary>
+        /// <param name="selectStatement"></param>
+        /// <param name="fromStatement"></param>
+        /// <param name="whereCriteria"></param>
+        /// <param name="orderbyStatement"></param>
+        /// <returns></returns>
+        public static StringList SelectSql(string selectStatement, string fromStatement, string whereCriteria, string orderbyStatement)
+        {
+            var sql = new StringList()
+                .Add("SELECT")
+                .Add(selectStatement)
+                .Add("FROM")
+                .Add(fromStatement);
+
+            if (!string.IsNullOrEmpty(whereCriteria))
+            {
+                if (!whereCriteria.StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+                    sql.Add("WHERE");
+                sql.Add(whereCriteria);
+            }
+
+            if (!string.IsNullOrEmpty(orderbyStatement))
+                sql.Add("ORDER BY")
+                    .Add(orderbyStatement);
+
+            return sql;
+        }
+        /// <summary>
+        /// 標準的なSELECT SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="selectStatement"></param>
+        /// <param name="whereCriteria"></param>
+        /// <param name="orderbyStatement"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList SelectSql<T>(string selectStatement, string whereCriteria, string orderbyStatement, string schema = null)
+        {
+            var table = GetMappedTableName<T>(schema);
+            var fromStatement = string.Join(".", table);
+            return SelectSql(selectStatement, fromStatement, whereCriteria, orderbyStatement);
+        }
+        /// <summary>
+        /// 標準的なSELECT SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="selects"></param>
+        /// <param name="whereCriteria"></param>
+        /// <param name="orders"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList SelectSql<T>(IEnumerable<string> selects, string whereCriteria, IEnumerable<string> orders, string schema = null)
+        {
+            var selectStatement = string.Join(", ", selects);
+            var orderbyStatement = (orders == null || orders.Count() == 0) ? null : string.Join(", ", orders);
+            return SelectSql<T>(selectStatement, whereCriteria, orderbyStatement, schema);
+        }
+
+        /// <summary>
+        /// 標準的なINSERT SQLを生成します。
+        /// </summary>
+        /// <param name="intoStatement"></param>
+        /// <param name="fieldsStatement"></param>
+        /// <param name="valuesStatement"></param>
+        /// <returns></returns>
+        public static StringList InsertSql(string intoStatement, string fieldsStatement, string valuesStatement)
+        {
+            var sql = new StringList()
+                .Add("INSERT")
+                .Add("INTO")
+                .Add(intoStatement)
+                .Add("({0})", fieldsStatement)
+                .Add("VALUES")
+                .Add("({0})", valuesStatement);
+
+            return sql;
+        }
+        /// <summary>
+        /// 標準的なINSERT SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="fieldsStatement"></param>
+        /// <param name="valuesStatement"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList InsertSql<T>(string fieldsStatement, string valuesStatement, string schema = null)
+        {
+            var table = GetMappedTableName<T>(schema);
+            var intoStatement = string.Join(".", table);
+            return InsertSql(intoStatement, fieldsStatement, valuesStatement);
+        }
+        /// <summary>
+        /// 標準的なINSERT SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="intoFields"></param>
+        /// <param name="values"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList InsertSql<T>(IEnumerable<string> fields, IEnumerable<string> values, string schema = null)
+        {
+            var fieldsStatement = string.Join(", ", fields);
+            var valuesStatement = string.Join(", ", values);
+            return InsertSql<T>(fieldsStatement, valuesStatement, schema);
+        }
+
+        /// <summary>
+        /// 標準的なUPDATE SQLを生成します。
+        /// </summary>
+        /// <param name="targetStatement"></param>
+        /// <param name="setStatement"></param>
+        /// <param name="whereCriteria"></param>
+        /// <returns></returns>
+        public static StringList UpdateSql(string targetStatement, string setStatement, string whereCriteria)
+        {
+            var sql = new StringList()
+                .Add("UPDATE")
+                .Add(targetStatement)
+                .Add("SET")
+                .Add(setStatement);
+
+            if (!string.IsNullOrEmpty(whereCriteria))
+            {
+                if (!whereCriteria.StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+                    sql.Add("WHERE");
+                sql.Add(whereCriteria);
+            }
+
+            return sql;
+        }
+        /// <summary>
+        /// 標準的なUPDATE SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="setStatement"></param>
+        /// <param name="whereCriteria"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList UpdateSql<T>(string setStatement, string whereCriteria, string schema = null)
+        {
+            var table = GetMappedTableName<T>(schema);
+            var targetStatement = string.Join(".", table);
+            return UpdateSql(targetStatement, setStatement, whereCriteria);
+        }
+        /// <summary>
+        /// 標準的なUPDATE SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="setExpressions"></param>
+        /// <param name="whereCriteria"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList UpdateSql<T>(IEnumerable<string> setExpressions, string whereCriteria, string schema = null)
+        {
+            var setStatement = string.Join(", ", setExpressions);
+            return UpdateSql<T>(setStatement, whereCriteria, schema);
+        }
+
+        /// <summary>
+        /// 標準的なDELETE SQLを生成します。
+        /// </summary>
+        /// <param name="fromStatement"></param>
+        /// <param name="whereCriteria"></param>
+        /// <returns></returns>
+        public static StringList DeleteSql(string fromStatement, string whereCriteria)
+        {
+            var sql = new StringList()
+                .Add("DELETE")
+                .Add("FROM")
+                .Add(fromStatement);
+
+            if (!string.IsNullOrEmpty(whereCriteria))
+            {
+                if (!whereCriteria.StartsWith("WHERE", StringComparison.OrdinalIgnoreCase))
+                    sql.Add("WHERE");
+                sql.Add(whereCriteria);
+            }
+
+            return sql;
+        }
+        /// <summary>
+        /// 標準的なDELETE SQLを生成します。
+        /// </summary>
+        /// <typeparam name="T">モデル</typeparam>
+        /// <param name="whereCriteria"></param>
+        /// <param name="schema">テーブルスキーマ</param>
+        /// <returns></returns>
+        public static StringList DeleteSql<T>(string whereCriteria, string schema = null)
+        {
+            var table = GetMappedTableName<T>(schema);
+            var fromStatement = string.Join(".", table);
+            return DeleteSql(fromStatement, whereCriteria);
+        }
+
+        /// <summary>
+        /// バインドパラメータとイコール記号の式（FIELDNAME=%FIELDNAME）を組み立てます
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        protected static IEnumerable<string> BuildEqExpressions<T>(IEnumerable<string> fields)
+            where T : DbConnection
+        {
+            var bindprefix = BindPrefix<T>();
+            var expressions = fields.Select((field) => string.Format("{1}={0}{1}", bindprefix, field));
+            return expressions;
+        }
+
+        /// <summary>
+        /// WHERE句を組み立てます
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fields"></param>
+        /// <param name="useOR"></param>
+        /// <returns></returns>
+        protected static string BuildWhereCriteria<T>(IEnumerable<string> fields, bool useOR)
+            where T : DbConnection
+        {
+            return string.Join(useOR ? " OR " : " AND ", BuildEqExpressions<T>(fields));
+        }
+
+        /// <summary>
+        /// SET句を組み立てます（UPDATE用）
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        protected static string BuildSetStatement<T>(IEnumerable<string> fields)
+            where T : DbConnection
+        {
+            return string.Join(", ", BuildEqExpressions<T>(fields));
+        }
+
+        /// <summary>
+        /// バインドパラメータのプリフィックス文字を返します
+        /// </summary>
+        /// <returns></returns>
+        protected static char BindPrefix<T>()
+            where T : DbConnection
+        {
+            switch (typeof(T).FullName)
+            {
+                case "System.Data.SqlClient.SqlConnection":
+                    return '@';
+                default:
+                    return '%';
+            }
+        }
+
         /// <summary>
         /// マッピング対象のテーブル名を取得します
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="schema">指定すると、テーブル名修飾子として結果にAppendします</param>
         /// <returns></returns>
-        internal static StringList GetMappedTableName<T>(string schema = null)
+        protected static IEnumerable<string> GetMappedTableName<T>(string schema = null)
         {
             string table = null;
             var attr = typeof(T).GetCustomAttributes<TableAttribute>();
@@ -407,9 +633,9 @@ namespace KOILib.Common.DataAccess
                 table = aattr.Name;
             }
             if (string.IsNullOrEmpty(schema))
-                return new StringList(table);
+                return new string[] { table };
             else
-                return new StringList(schema, table);
+                return new string[] { schema, table };
         }
 
         /// <summary>
@@ -417,13 +643,13 @@ namespace KOILib.Common.DataAccess
         /// </summary>
         /// <param name="nor_attributes">属性型</param>
         /// <returns></returns>
-        internal static StringList GetFieldsNor<T>(params Type[] nor_attributes)
+        protected static IEnumerable<string> GetFieldsNor<T>(params Type[] nor_attributes)
         {
             Func<CustomAttributeData, bool> predicate = attr => nor_attributes.All(t => !attr.AttributeType.Equals(t));
             var fields = typeof(T).GetProperties()
                 .Where(f => f.CustomAttributes.All(predicate))
                 .Select(f => f.Name);
-            return new StringList(fields);
+            return fields;
         }
 
         /// <summary>
@@ -431,13 +657,13 @@ namespace KOILib.Common.DataAccess
         /// </summary>
         /// <param name="any_attributes">属性型</param>
         /// <returns></returns>
-        internal static StringList GetFieldsAny<T>(params Type[] any_attributes)
+        protected static IEnumerable<string> GetFieldsAny<T>(params Type[] any_attributes)
         {
             Func<CustomAttributeData, bool> predicate = attr => any_attributes.Any(t => attr.AttributeType.Equals(t));
             var fields = typeof(T).GetProperties()
                 .Where(f => f.CustomAttributes.Any(predicate))
                 .Select(f => f.Name);
-            return new StringList(fields);
+            return fields;
         }
 
         /// <summary>
@@ -445,11 +671,11 @@ namespace KOILib.Common.DataAccess
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        protected internal static StringList GetFields<T>()
+        protected static IEnumerable<string> GetFields<T>()
         {
             var fields = typeof(T).GetProperties()
                 .Select(f => f.Name);
-            return new StringList(fields);
+            return fields;
         }
         #endregion
 

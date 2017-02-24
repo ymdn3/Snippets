@@ -100,6 +100,27 @@ namespace KOILib.Common.Core.Extensions
         {
             return first.Union(second, new CompareSelector<T, TKey>(selector));
         }
+
+        /// <summary>
+        /// 指定されたすべてのタスクが完了してから完了するタスクを作成します。
+        /// </summary>
+        /// <param name="tasks">完了を待機するタスク。</param>
+        /// <returns>指定されたすべてのタスクの完了を表すタスク。</returns>
+        public static Task WhenAll(this IEnumerable<Task> tasks)
+        {
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// 指定されたすべてのタスクが完了してから完了するタスクを作成します。
+        /// </summary>
+        /// <typeparam name="T">完了したタスクの型。</typeparam>
+        /// <param name="tasks">完了を待機するタスク。</param>
+        /// <returns>指定されたすべてのタスクの完了を表すタスク。</returns>
+        public static Task<T[]> WhenAll<T>(this IEnumerable<Task<T>> tasks)
+        {
+            return Task.WhenAll(tasks);
+        }
         #endregion
     }
 }

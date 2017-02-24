@@ -12,6 +12,46 @@ namespace KOILib.Common.Core
     public class StringList
         : List<string>
     {
+        #region Static Members
+        /// <summary>
+        /// 区切り文字と括り文字を指定した文字列を返します。
+        /// </summary>
+        /// <param name="strings"></param>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="prequot">括り文字（開始）</param>
+        /// <param name="postquot">括り文字（終了）</param>
+        /// <returns></returns>
+        public static string DecorateString(IEnumerable<string> strings, string sep, char prequot, char postquot)
+        {
+            return new StringList(strings).ToDecorateString(sep, prequot, postquot);
+        }
+
+        /// <summary>
+        /// 区切り文字と括り文字を指定した文字列を返します。
+        /// </summary>
+        /// <param name="strings"></param>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="quot">括り文字</param>
+        /// <param name="pos">括り文字位置</param>
+        /// <returns></returns>
+        public static string DecorateString(IEnumerable<string> strings, string sep, char quot, StringListQuotePositions pos)
+        {
+            return new StringList(strings).ToDecorateString(sep, quot, pos);
+        }
+
+        /// <summary>
+        /// 区切り文字と括り文字を指定した文字列を返します。
+        /// </summary>
+        /// <param name="strings"></param>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="quot">括り文字（はじめの2文字を開始文字と終了文字とに分割します）</param>
+        /// <returns></returns>
+        public static string DecorateString(IEnumerable<string> strings, string sep, string quot = null)
+        {
+            return new StringList(strings).ToDecorateString(sep, quot);
+        }
+        #endregion
+
         /// <summary>
         /// ToStringデコレーション情報
         /// </summary>
@@ -140,6 +180,7 @@ namespace KOILib.Common.Core
         /// </summary>
         /// <param name="sep">区切り文字</param>
         /// <param name="quot">括り文字</param>
+        /// <param name="pos">括り文字位置</param>
         /// <returns></returns>
         public StringList Decorate(string sep, char quot, StringListQuotePositions pos)
         {
@@ -153,16 +194,51 @@ namespace KOILib.Common.Core
         /// <param name="sep">区切り文字</param>
         /// <param name="quot">括り文字（はじめの2文字を開始文字と終了文字とに分割します）</param>
         /// <returns></returns>
-        public StringList Decorate(string sep = null, string quot = null)
+        public StringList Decorate(string sep, string quot = null)
         {
             DecorateInfo = StringListDecoration.From(sep, quot);
             return this;
         }
 
-        [Obsolete(error: true, message: "→ Decorate().ToString();")]
+        [Obsolete(error: true, message: "→ Decorate().ToString(param args);")]
         public string ToString(string sep, params object[] args)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 区切り文字と括り文字を指定し、引数なしのToString()を返します。
+        /// </summary>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="prequot">括り文字（開始）</param>
+        /// <param name="postquot">括り文字（終了）</param>
+        /// <returns></returns>
+        public string ToDecorateString(string sep, char prequot, char postquot)
+        {
+            return Decorate(sep, prequot, postquot).ToString();
+        }
+
+        /// <summary>
+        /// 区切り文字と括り文字を指定し、引数なしのToString()を返します。
+        /// </summary>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="quot">括り文字</param>
+        /// <param name="pos">括り文字位置</param>
+        /// <returns></returns>
+        public string ToDecorateString(string sep, char quot, StringListQuotePositions pos)
+        {
+            return Decorate(sep, quot, pos).ToString();
+        }
+
+        /// <summary>
+        /// 区切り文字と括り文字を指定し、引数なしのToString()を返します。
+        /// </summary>
+        /// <param name="sep">区切り文字</param>
+        /// <param name="quot">括り文字（はじめの2文字を開始文字と終了文字とに分割します）</param>
+        /// <returns></returns>
+        public string ToDecorateString(string sep, string quot = null)
+        {
+            return Decorate(sep, quot).ToString();
         }
 
         /// <summary>

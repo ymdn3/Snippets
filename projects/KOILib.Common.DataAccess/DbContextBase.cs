@@ -37,6 +37,25 @@ namespace KOILib.Common.DataAccess
     {
         #region Static Members
         /// <summary>
+        /// 接続文字列を編集します。
+        /// 値がnullのとき削除します。
+        /// </summary>
+        /// <param name="srcConnstr"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string EditConnectionString(string srcConnstr, string key, object value)
+        {
+            var cb = new DbConnectionStringBuilder();
+            cb.ConnectionString = srcConnstr;
+            if (cb.ContainsKey(key))
+                cb.Remove(key);
+            if (value != null)
+                cb.Add(key, value);
+            return cb.ToString();
+        }
+
+        /// <summary>
         /// SQLログテキストを構築します（標準）
         /// </summary>
         /// <param name="e"></param>
@@ -94,7 +113,6 @@ namespace KOILib.Common.DataAccess
             {
                 return ((IDbConnection)Connection).ConnectionString;
             }
-
             set
             {
                 ((IDbConnection)Connection).ConnectionString = value;

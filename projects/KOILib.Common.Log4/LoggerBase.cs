@@ -74,7 +74,7 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         public void Fatal(Exception ex)
         {
-            var method = SearchInvoker();
+            var method = SearchInvoker(ex);
             Fatal(method, ex);
         }
 
@@ -96,7 +96,7 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         public void Error(Exception ex)
         {
-            var method = SearchInvoker();
+            var method = SearchInvoker(ex);
             Error(method, ex);
         }
 
@@ -118,7 +118,7 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         public void Warn(Exception ex)
         {
-            var method = SearchInvoker();
+            var method = SearchInvoker(ex);
             Warn(method, ex);
         }
 
@@ -231,7 +231,7 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         public void Write(LogLevel level, Exception ex)
         {
-            var method = SearchInvoker();
+            var method = SearchInvoker(ex);
             Write(level, method, ex);
         }
 
@@ -288,12 +288,19 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         protected MethodBase SearchInvoker()
         {
-            var trace = new StackTrace(fNeedFileInfo: true);
+            return SearchInvoker(null);
+        }
+        protected MethodBase SearchInvoker(Exception ex)
+        {
+            var trace = ex == null 
+                ? new StackTrace(fNeedFileInfo: true) 
+                : new StackTrace(ex, fNeedFileInfo: true);
             if (trace == null)
                 return default(MethodBase);
 
             var logMethod = trace.GetFrames()
                 .Select(frame => frame.GetMethod())
+                .Where(method => method.DeclaringType != null)
                 .Where(method => InvokerDeclarations
                     .Any(w => method.DeclaringType.FullName.StartsWith(w, StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault();
@@ -311,8 +318,8 @@ namespace KOILib.Common.Log4
         {
             // クラスまたはメソッドが不明な場合の表記
             const string UNKNOWN = "(unknown)";
-            var cname = (method != null ? method.DeclaringType.Name : UNKNOWN);
-            var mname = (method != null ? method.Name : UNKNOWN);
+            var cname = (method == null ? UNKNOWN : method.DeclaringType == null ? UNKNOWN : method.DeclaringType.Name);
+            var mname = (method == null ? UNKNOWN : method.Name);
             return string.Format("[{0}.{1}] - {2}", cname, mname, msg);
         }
 

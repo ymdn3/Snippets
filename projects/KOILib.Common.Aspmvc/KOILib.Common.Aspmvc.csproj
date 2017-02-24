@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Filters\GeneralHandleErrorAttribute.cs" />
     <Compile Include="Filters\RequiredFormAttribute.cs" />
     <Compile Include="MethodSelectors\AcceptFormAttribute.cs" />
     <Compile Include="ControllerBase.cs" />
@@ -85,6 +86,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\KOILib.Common.Log4\KOILib.Common.Log4.csproj">
+      <Project>{68236E7D-23AE-4C43-89E4-F04DEF25EBA1}</Project>
+      <Name>KOILib.Common.Log4</Name>
+    </ProjectReference>
     <ProjectReference Include="..\KOILib.Common\KOILib.Common.csproj">
       <Project>{11AF762B-BB5B-4A26-9C5D-954DA214A29D}</Project>
       <Name>KOILib.Common</Name>
