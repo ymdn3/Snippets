@@ -16,6 +16,8 @@ namespace KOILib.Common.DataAccess
         public event EventHandler Committed;
         public event EventHandler Rollbacked;
 
+        public bool DisposingCommit { get; set; }
+
         private DbContextBase _context;
 
         private DbTransaction _transaction
@@ -56,6 +58,21 @@ namespace KOILib.Common.DataAccess
         {
             if (disposing)
             {
+                if (_transaction != null)
+                {
+                    //ロールバック・コミット保証
+                    try
+                    {
+                        if (DisposingCommit)
+                            Commit();
+                        else
+                            Rollback();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
                 _context = null;
             }
             base.Dispose(disposing);

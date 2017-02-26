@@ -29,11 +29,11 @@ namespace KOILib.Common.Aspmvc.Helpers
             return Image(self, byteArray, null, contentType);
         }
 
-
+        #region ファイルから直接インラインに流し込むヘルパーメソッド
         private static readonly Dictionary<string, string> _inlineRenderCache = new Dictionary<string, string>();
         private static readonly SHA512CryptoServiceProvider _hasher = new SHA512CryptoServiceProvider();
 
-        public static IHtmlString InlineRender<TModel>(this HtmlHelper<TModel> self, string[] virtualPathes)
+        public static IHtmlString InlineRender<TModel>(this HtmlHelper<TModel> self, IEnumerable<string> virtualPathes)
         {
             var sb = new StringBuilder();
             using (var w = new StringWriter(sb))
@@ -68,6 +68,6 @@ namespace KOILib.Common.Aspmvc.Helpers
                 }
             }
         }
-
+        #endregion
     }
 }

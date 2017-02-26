@@ -145,54 +145,12 @@ namespace KOILib.Common.DataAccess
 
         public IDbTransaction BeginTransaction()
         {
-            if (Transaction != null)
-                throw new Exception("複数のトランザクションを開始することはできません。");
-
-            //connection open
-            if (Connection.State == ConnectionState.Closed)
-                Connection.Open();
-
-            //begin tran
-            Transaction = Connection.BeginTransaction();
-
-            //logging
-            if (this is ILog4Logging)
-            {
-                var logging = (ILog4Logging)this;
-                if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
-            }
-
-            var wrapper = new DbContextTransaction(this);
-            wrapper.Committed += Transaction_Committed;
-            wrapper.Rollbacked += Transaction_Rollbacked;
-            return wrapper;
+            return BeginTransaction(IsolationLevel.Unspecified, disposingCommit: false);
         }
 
         public IDbTransaction BeginTransaction(IsolationLevel il)
         {
-            if (Transaction != null)
-                throw new Exception("複数のトランザクションを開始することはできません。");
-
-            //connection open
-            if (Connection.State == ConnectionState.Closed)
-                Connection.Open();
-
-            //begin tran
-            Transaction = Connection.BeginTransaction(il);
-
-            //logging
-            if (this is ILog4Logging)
-            {
-                var logging = (ILog4Logging)this;
-                if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
-            }
-
-            var wrapper = new DbContextTransaction(this);
-            wrapper.Committed += Transaction_Committed;
-            wrapper.Rollbacked += Transaction_Rollbacked;
-            return wrapper;
+            return BeginTransaction(il, disposingCommit: false);
         }
 
         public void ChangeDatabase(string databaseName)
@@ -219,14 +177,6 @@ namespace KOILib.Common.DataAccess
         {
             if (Transaction != null)
             {
-                //ロールバック保証
-                try
-                {
-                    Transaction.Rollback();
-                }
-                catch (Exception)
-                {                    
-                }
                 Transaction.Dispose();
                 Transaction = null;
             }
@@ -326,6 +276,41 @@ namespace KOILib.Common.DataAccess
             }
 
             Transaction = null;
+        }
+
+        private IDbTransaction BeginTransaction(IsolationLevel il, bool disposingCommit)
+        {
+            if (Transaction != null)
+                throw new Exception("複数のトランザクションを開始することはできません。");
+
+            //connection open
+            if (Connection.State == ConnectionState.Closed)
+                Connection.Open();
+
+            //begin tran
+            if (il == IsolationLevel.Unspecified)
+                Transaction = Connection.BeginTransaction();
+            else
+                Transaction = Connection.BeginTransaction(il);
+
+            //logging
+            if (this is ILog4Logging)
+            {
+                var logging = (ILog4Logging)this;
+                if (logging.Logger != null)
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
+            }
+
+            var wrapper = new DbContextTransaction(this);
+            wrapper.DisposingCommit = disposingCommit;
+            wrapper.Committed += Transaction_Committed;
+            wrapper.Rollbacked += Transaction_Rollbacked;
+            return wrapper;
+        }
+
+        public IDbTransaction BeginTransaction(bool disposingCommit)
+        {
+            return BeginTransaction(IsolationLevel.Unspecified, disposingCommit);
         }
 
 

@@ -13,13 +13,18 @@ namespace KOILib.Common.Aspmvc
         /// <summary>
         /// Bootstrap ヘルパー
         /// </summary>
-        public BootstrapHelper<TModel> Bootstrap { get; set; }
+        public BootstrapHelper<TModel> Bootstrap { get; private set; }
+
+        /// <summary>
+        /// Newtonsoft.Json ヘルパー
+        /// </summary>
+        public JsonHelper<TModel> Json { get; private set; }
 
         public override void InitHelpers()
         {
             base.InitHelpers();
             Bootstrap = new BootstrapHelper<TModel>(ViewContext, this);
+            Json = new JsonHelper<TModel>(ViewContext, this);
         }
-
     }
 }

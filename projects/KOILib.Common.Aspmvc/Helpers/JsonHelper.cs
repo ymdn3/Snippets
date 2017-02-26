@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace KOILib.Common.Aspmvc.Helpers
 {
-    public class BootstrapHelper<TModel> : BootstrapHelper
+    public class JsonHelper<TModel> : JsonHelper
     {
         public new ViewDataDictionary<TModel> ViewData { get; private set; }
 
@@ -24,19 +23,19 @@ namespace KOILib.Common.Aspmvc.Helpers
             }
         }
 
-        public BootstrapHelper(ViewContext viewContext, IViewDataContainer viewDataContainer)
+        public JsonHelper(ViewContext viewContext, IViewDataContainer viewDataContainer)
             : this(viewContext, viewDataContainer, RouteTable.Routes)
         {
         }
 
-        public BootstrapHelper(ViewContext viewContext, IViewDataContainer viewDataContainer, RouteCollection routeCollection)
+        public JsonHelper(ViewContext viewContext, IViewDataContainer viewDataContainer, RouteCollection routeCollection)
             : base(viewContext, viewDataContainer, routeCollection)
         {
             ViewData = new ViewDataDictionary<TModel>(viewDataContainer.ViewData);
         }
     }
 
-    public class BootstrapHelper : HelperBase
+    public class JsonHelper : HelperBase
     {
         private DynamicViewDataDictionary _dynamicViewDataDictionary;
         public new dynamic ViewBag
@@ -49,12 +48,12 @@ namespace KOILib.Common.Aspmvc.Helpers
             }
         }
 
-        public BootstrapHelper(ViewContext viewContext, IViewDataContainer viewDataContainer)
+        public JsonHelper(ViewContext viewContext, IViewDataContainer viewDataContainer)
             : this(viewContext, viewDataContainer, RouteTable.Routes)
         {
         }
 
-        public BootstrapHelper(ViewContext viewContext, IViewDataContainer viewDataContainer, RouteCollection routeCollection)
+        public JsonHelper(ViewContext viewContext, IViewDataContainer viewDataContainer, RouteCollection routeCollection)
             : base(viewContext, viewDataContainer, routeCollection)
         {
         }

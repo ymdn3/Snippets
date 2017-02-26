@@ -14,9 +14,7 @@ namespace KOILib.Common.Core
     public static class Consts
     {
 
-        public static readonly bool WIN64 = typeof(int).Equals(typeof(System.Int64));
-
-        public static readonly int INSTANCE_HASHCODE_LEN = (WIN64 ? 64 : 32) / 4;
+        public static readonly int INSTANCE_HASHCODE_LEN = (System.Environment.Is64BitProcess ? 64 : 32) / 4;
         
     }
 }
