@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -15,6 +14,20 @@ namespace KOILib.Common
     /// </summary>
     public static class Utils
     {
+        #region Extensions
+        public static bool EqualsAny<T>(this T self, IEnumerable<T> values)
+            where T : struct
+        {
+            return values.Any(value => self.Equals(value));
+        }
+        public static bool EqualsAs<T>(this T self, string another)
+            where T : struct
+        {
+            return self.ToString().Equals(another, StringComparison.Ordinal);
+        }
+
+        #endregion
+
         public static string ConvertToIPv4(string addr)
         {
             var iphEntry = Dns.GetHostEntry(addr);
@@ -28,21 +41,6 @@ namespace KOILib.Common
             {
                 return ipv4.ToString();
             }
-        }
-
-        public static IDictionary<string, object> DictionaryFrom(object values)
-        {
-            var dict = new Dictionary<string, object>(StringComparer.Ordinal);
-            if (values != null)
-            {
-                PropertyDescriptorCollection props = TypeDescriptor.GetProperties(values);
-                foreach (PropertyDescriptor prop in props)
-                {
-                    object val = prop.GetValue(values);
-                    dict.Add(prop.Name, val);
-                }
-            }
-            return dict;
         }
 
     }

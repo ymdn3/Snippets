@@ -85,7 +85,7 @@ namespace KOILib.Common.DataAccess
         }
         private static void SQLLogAppendHead(StringBuilder sb, TraceDbProfilerEventArgs e)
         {
-            sb.AppendFormat("[SQL:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}]", e.Command.GetHashCode());
+            sb.AppendFormat("[SQL:{0:x" + Consts.INSTANCE_HASHCODE_LEN + "}]", e.Command.GetHashCode());
         }
         private static void SQLLogAppendCommand(StringBuilder sb, TraceDbProfilerEventArgs e)
         {
@@ -259,7 +259,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] ROLLBACK", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:x" + Consts.INSTANCE_HASHCODE_LEN + "}] ROLLBACK", Transaction.GetHashCode());
             }
 
             Transaction = null;
@@ -272,7 +272,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] COMMIT", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:x" + Consts.INSTANCE_HASHCODE_LEN + "}] COMMIT", Transaction.GetHashCode());
             }
 
             Transaction = null;
@@ -298,7 +298,7 @@ namespace KOILib.Common.DataAccess
             {
                 var logging = (ILog4Logging)this;
                 if (logging.Logger != null)
-                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:X" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
+                    logging.Logger.Write(logging.LogLevel, "[TRN:{0:x" + Consts.INSTANCE_HASHCODE_LEN + "}] BEGIN TRAN", Transaction.GetHashCode());
             }
 
             var wrapper = new DbContextTransaction(this);

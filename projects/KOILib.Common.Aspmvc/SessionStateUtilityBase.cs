@@ -8,7 +8,7 @@ using System.Web.SessionState;
 
 namespace KOILib.Common.Aspmvc
 {
-    public abstract class SessionUtilityBase
+    public abstract class SessionStateUtilityBase
     {
         private HttpSessionStateBase _httpSession;
 
@@ -52,15 +52,15 @@ namespace KOILib.Common.Aspmvc
             return Get<T>(key, true);
         }
 
-        public SessionUtilityBase(HttpContext context)
+        public SessionStateUtilityBase(HttpContext context)
         {
             _httpSession = new HttpSessionStateWrapper(context.Session);
         }
-        public SessionUtilityBase(HttpSessionState session)
+        public SessionStateUtilityBase(HttpSessionState session)
         {
             _httpSession = new HttpSessionStateWrapper(session);
         }
-        public SessionUtilityBase(HttpSessionStateBase session)
+        public SessionStateUtilityBase(HttpSessionStateBase session)
         {
             _httpSession = session;
         }

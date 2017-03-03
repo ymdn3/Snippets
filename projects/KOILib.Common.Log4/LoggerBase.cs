@@ -22,11 +22,6 @@ namespace KOILib.Common.Log4
         protected static string LOG4NET_LOGFILE_PATH = "LOG4NET_LOGFILE_PATH";
 
         /// <summary>
-        /// Loggerクラスインスタンス
-        /// </summary>
-        protected static LoggerBase _Instance { get; set; }
-
-        /// <summary>
         /// log4netを指定のファイルで初期化します
         /// </summary>
         /// <param name="confFilepath">log4net設定ファイルのパス</param>

@@ -1,13 +1,86 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace KOILib.Common.Core.Extensions
 {
-    public static class IEnumerableExtension
+    public static class CollectionsExtension
     {
+        #region System.Collections.Generic.IList
+        /// <summary>
+        /// http://stackoverflow.com/questions/11981282/convert-json-to-datatable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static System.Data.DataTable ToDataTable<T>(this IList<T> data)
+        {
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(typeof(T));
+            System.Data.DataTable table = new System.Data.DataTable();
+            for (int i = 0; i < props.Count; i++)
+            {
+                PropertyDescriptor prop = props[i];
+                table.Columns.Add(prop.Name, prop.PropertyType);
+            }
+            object[] values = new object[props.Count];
+            foreach (T item in data)
+            {
+                for (int i = 0; i < values.Length; i++)
+                {
+                    values[i] = props[i].GetValue(item);
+                }
+                table.Rows.Add(values);
+            }
+            return table;
+        }
+        #endregion
+
+        #region System.Collections.Generic.IDictionary
+        /// <summary>
+        /// Dynamicオブジェクト(new {})をDictionaryに追加します。
+        /// ネストオブジェクトはプロパティ名を連結し、フラットな状態に変換します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="value">dynamicオブジェクト</param>
+        /// <param name="nameseparator">プロパティ名連結セパレータ</param>
+        public static void AddKeyValue(this IDictionary<string, object> self, object value, string nameseparator)
+        {
+            if (value != null)
+                AddKeyValue(self, null, value, nameseparator);
+        }
+        /// <summary>
+        /// Dynamicオブジェクト(new {})をDictionaryに追加します。
+        /// ネストオブジェクトはプロパティ名を連結し、フラットな状態に変換します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="name">ネスト親のプロパティ名</param>
+        /// <param name="value">dynamicオブジェクト</param>
+        /// <param name="nameseparator">プロパティ名連結セパレータ</param>
+        public static void AddKeyValue(this IDictionary<string, object> self, string name, object value, string nameseparator)
+        {
+            PropertyDescriptorCollection props = TypeDescriptor.GetProperties(value);
+            if (props.Count > 0)
+            {
+                foreach (PropertyDescriptor prop in props)
+                {
+                    object val = prop.GetValue(value);
+                    string n = string.IsNullOrEmpty(name) ? prop.Name : name + nameseparator + prop.Name;
+                    if (prop.PropertyType.IsValueType || val.GetType() == typeof(string))
+                        self.Add(n, val);
+                    else
+                        AddKeyValue(self, n, val, nameseparator);
+                }
+            }
+            else
+            {
+                self.Add(name, value);
+            }
+        }
+        #endregion
+
         #region System.Collections.Generic.IEnumerable
         /// <summary>
         /// このインスタンスの列挙子すべてに、指定の処理を行います。
@@ -30,6 +103,30 @@ namespace KOILib.Common.Core.Extensions
         public static void ParallelDo<T>(this IEnumerable<T> source, Action<T> action)
         {
             Parallel.ForEach(source, action);
+        }
+
+        /// <summary>
+        /// 指定した要素をシーケンスの最後に追加します。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Append<T>(this IEnumerable<T> source, T item)
+        {
+            return source.Concat(new[] { item });
+        }
+
+        /// <summary>
+        /// 指定した要素をシーケンスの先頭に追加します。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> source, T item)
+        {
+            return (new[] { item }).Concat(source);
         }
 
         /// <summary>

@@ -39,6 +39,10 @@ namespace KOILib.Common.Log4.Pattern
                 {
                     //NOOP
                 }
+                catch (Exception e)
+                {
+                    ipaddr = e.GetType().Name;
+                }
             }
             writer.Write(ipaddr);
         }

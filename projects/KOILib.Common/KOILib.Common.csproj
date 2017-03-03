@@ -46,12 +46,12 @@
     <Compile Include="Core\EnumEx.cs" />
     <Compile Include="Core\Extensions\AppSettingsReaderExtension.cs" />
     <Compile Include="Core\Extensions\CharExtension.cs" />
+    <Compile Include="Core\Extensions\CollectionsExtension.cs" />
     <Compile Include="Core\Extensions\DataTableExtension.cs" />
     <Compile Include="Core\Extensions\DateTimeExtension.cs" />
     <Compile Include="Core\Extensions\EnumExtension.cs" />
     <Compile Include="Core\Extensions\FileInfoExtension.cs" />
-    <Compile Include="Core\Extensions\IEnumerableExtension.cs" />
-    <Compile Include="Core\Extensions\IListExtension.cs" />
+    <Compile Include="Core\Extensions\ObjectExtension.cs" />
     <Compile Include="Core\Extensions\StringExtension.cs" />
     <Compile Include="Core\Extensions\TypeExtension.cs" />
     <Compile Include="Core\StringList.cs" />
