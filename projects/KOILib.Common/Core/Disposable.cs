@@ -28,7 +28,10 @@ namespace KOILib.Common.Core
             if (!disposedValue)
             {
                 if (disposing)
-                    _dispose();
+                {
+                    if (_dispose != null)
+                        _dispose();
+                }
                 disposedValue = true;
             }
         }
@@ -37,7 +40,7 @@ namespace KOILib.Common.Core
             Dispose(true);
         }
 
-        private Disposable()
+        protected Disposable()
         {
         }
     }
