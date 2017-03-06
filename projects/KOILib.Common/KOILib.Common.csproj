@@ -54,6 +54,7 @@
     <Compile Include="Core\Extensions\ObjectExtension.cs" />
     <Compile Include="Core\Extensions\StringExtension.cs" />
     <Compile Include="Core\Extensions\TypeExtension.cs" />
+    <Compile Include="Core\FieldAttributeBase.cs" />
     <Compile Include="Core\StringList.cs" />
     <Compile Include="Core\StringListDecoration.cs" />
     <Compile Include="Core\Tasks.cs" />

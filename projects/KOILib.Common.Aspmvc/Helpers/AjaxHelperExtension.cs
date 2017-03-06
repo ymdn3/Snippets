@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
 using System.Web.Mvc.Html;
+using KOILib.Common.Core.Extensions;
 
 namespace KOILib.Common.Aspmvc.Helpers
 {
     public static class AjaxHelperExtension
     {
-        public static MvcForm BeginForm<TModel>(this AjaxHelper<TModel> self, AjaxOptions ajaxOptions, string id)
+        public static MvcForm BeginForm<TModel>(this AjaxHelper<TModel> self, AjaxOptions ajaxOptions, object htmlAttributes)
         {
-            return self.BeginForm(null, null, ajaxOptions, new { id = id });
+            return self.BeginForm(null, null, ajaxOptions, htmlAttributes.ToFlattenDictionary("-"));
         }
     }
 }

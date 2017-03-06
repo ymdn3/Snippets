@@ -89,16 +89,9 @@
     <Compile Include="Helpers\BootstrapHelperExtension.cs" />
     <Compile Include="Helpers\HtmlHelperExtension.cs" />
     <Compile Include="Filters\ParameterFromSessionAttribute.cs" />
-    <Compile Include="Models\ComplexValueItem.cs" />
-    <Compile Include="Models\DropdownItem.cs" />
-    <Compile Include="Models\EvalstringBag.cs" />
     <Compile Include="Models\HtmlFormInput.cs" />
     <Compile Include="Models\IHtmlElement.cs" />
     <Compile Include="Models\IHtmlFormElement.cs" />
-    <Compile Include="Models\RadioItem.cs" />
-    <Compile Include="Models\SlickEditors.cs" />
-    <Compile Include="Models\SlickGridColumnOption.cs" />
-    <Compile Include="Models\SlickGridOption.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SessionStateUtilityBase.cs" />
     <Compile Include="WebViewPageBase.cs" />
