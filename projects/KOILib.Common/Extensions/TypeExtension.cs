@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KOILib.Common.Core.Extensions
+namespace KOILib.Common.Extensions
 {
     public static class TypeExtension
     {

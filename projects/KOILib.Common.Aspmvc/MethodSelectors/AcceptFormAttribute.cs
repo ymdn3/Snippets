@@ -22,7 +22,7 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
         /// Formパラメータの値。
         /// 指定しないときNameが存在すれば妥当となる。
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; private set; }
 
         /// <summary>
         /// 
@@ -39,9 +39,13 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
                 : req.Form[Name] != null;
         }
 
-        public AcceptFormAttribute(string Name)
+        public AcceptFormAttribute(string name, string value)
         {
-            this.Name = Name;
+            this.Name = name;
+            this.Value = value;
+        }
+        public AcceptFormAttribute(string name) : this(name, null)
+        {
         }
     }
 }

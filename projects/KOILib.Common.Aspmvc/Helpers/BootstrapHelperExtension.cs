@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using KOILib.Common.Core.Extensions;
+using KOILib.Common.Extensions;
 
 namespace KOILib.Common.Aspmvc.Helpers
 {

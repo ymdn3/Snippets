@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KOILib.Common.Core
+namespace KOILib.Common
 {
     /// <summary>
     /// IDisposable 実装

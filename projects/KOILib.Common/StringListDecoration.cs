@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KOILib.Common.Core
+namespace KOILib.Common
 {
     /// <summary>
     /// StringListDecoration 括り文字の開始終了位置

@@ -7,8 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using KOILib.Common.Core;
-using KOILib.Common.Core.Extensions;
+using KOILib.Common;
+using KOILib.Common.Extensions;
 using Newtonsoft.Json;
 
 namespace KOILib.Common.DataAccess

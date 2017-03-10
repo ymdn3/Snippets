@@ -20,12 +20,6 @@ namespace KOILib.Common
         {
             return values.Any(value => self.Equals(value));
         }
-        public static bool EqualsAs<T>(this T self, string another)
-            where T : struct
-        {
-            return self.ToString().Equals(another, StringComparison.Ordinal);
-        }
-
         #endregion
 
         public static string ConvertToIPv4(string addr)

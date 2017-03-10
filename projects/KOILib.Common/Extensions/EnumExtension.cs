@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KOILib.Common.Core.Extensions
+namespace KOILib.Common.Extensions
 {
     /// <summary>
     /// enum 型拡張メソッド

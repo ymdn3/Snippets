@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using KOILib.Common.Core.Extensions;
+using KOILib.Common.Extensions;
 using StackExchange.Profiling.Data;
 
 namespace KOILib.Common.DataAccess.Trace

@@ -10,41 +10,45 @@ namespace KOILib.Common.Aspmvc
 {
     public abstract class SessionStateUtilityBase
     {
-        private HttpSessionStateBase _httpSession;
+        protected HttpSessionStateBase _HttpSession;
 
         protected T Get<T>(string key, bool atOnce)
         {
-            if (_httpSession[key] == null)
+            if (_HttpSession[key] == null)
                 return default(T);
 
-            var value = _httpSession[key];
+            var value = _HttpSession[key];
 
             if (atOnce)
-                _httpSession.Remove(key);
+                _HttpSession.Remove(key);
 
             return (T)value;
         }
 
         public void Abandon()
         {
-            _httpSession.Clear();
-            _httpSession.Abandon();
+            _HttpSession.Abandon();
+        }
+
+        public void Clear()
+        {
+            _HttpSession.Clear();
         }
 
         public void Remove(string key)
         {
-            _httpSession.Remove(key);
+            _HttpSession.Remove(key);
         }
 
         public void Set<T>(string key, T value)
         {
-            _httpSession.Remove(key);
-            _httpSession[key] = value;
+            _HttpSession.Remove(key);
+            _HttpSession[key] = value;
         }
 
         public bool Exists(string key)
         {
-            return (_httpSession[key] != null);
+            return (_HttpSession[key] != null);
         }
 
         public T GetOnce<T>(string key)
@@ -54,15 +58,15 @@ namespace KOILib.Common.Aspmvc
 
         public SessionStateUtilityBase(HttpContext context)
         {
-            _httpSession = new HttpSessionStateWrapper(context.Session);
+            _HttpSession = new HttpSessionStateWrapper(context.Session);
         }
         public SessionStateUtilityBase(HttpSessionState session)
         {
-            _httpSession = new HttpSessionStateWrapper(session);
+            _HttpSession = new HttpSessionStateWrapper(session);
         }
         public SessionStateUtilityBase(HttpSessionStateBase session)
         {
-            _httpSession = session;
+            _HttpSession = session;
         }
     }
 }

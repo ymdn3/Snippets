@@ -15,9 +15,9 @@ namespace KOILib.Common.Excel
     {
         #region Static Members
         /// <summary>
-        /// 初期シート名
+        /// デフォルトシート名「Sheet1」
         /// </summary>
-        private const string TempSheetName = "Sheet1";
+        public const string DefaultSheetName = "Sheet1";
 
         /// <summary>
         /// 列をあらわす文字を、列番号に変換します

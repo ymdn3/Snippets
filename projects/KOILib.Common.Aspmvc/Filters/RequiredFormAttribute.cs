@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using KOILib.Common.Core.Extensions;
+using KOILib.Common.Extensions;
 
 namespace KOILib.Common.Aspmvc.Filters
 {
@@ -18,7 +18,7 @@ namespace KOILib.Common.Aspmvc.Filters
             var valid = Names.All(name => !string.IsNullOrEmpty(req.Form[name]));
 
             if (!valid)
-                throw new Exception("invalid in requirements."); //TODO
+                throw new Exception("invalid in requirements.");
         }
 
         public RequiredFormAttribute(string commaseparatedName)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Mvc.Ajax;
 using System.Web.Mvc.Html;
-using KOILib.Common.Core.Extensions;
+using KOILib.Common.Extensions;
 
 namespace KOILib.Common.Aspmvc.Helpers
 {

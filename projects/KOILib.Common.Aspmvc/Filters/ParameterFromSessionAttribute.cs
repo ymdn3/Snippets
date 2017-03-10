@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using KOILib.Common.Core;
+using KOILib.Common;
 
 namespace KOILib.Common.Aspmvc.Filters
 {
