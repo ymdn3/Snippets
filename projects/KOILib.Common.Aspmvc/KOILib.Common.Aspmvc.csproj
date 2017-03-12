@@ -82,6 +82,7 @@
     <Compile Include="Helpers\JsonHelper.cs" />
     <Compile Include="Helpers\JsonHelperExtension.cs" />
     <Compile Include="JsonNetResult.cs" />
+    <Compile Include="MethodSelectors\AcceptRouteAttribute.cs" />
     <Compile Include="MethodSelectors\AcceptFormAttribute.cs" />
     <Compile Include="ControllerBase.cs" />
     <Compile Include="DynamicViewDataDictionary.cs" />
