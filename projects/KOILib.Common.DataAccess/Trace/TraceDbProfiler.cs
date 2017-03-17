@@ -38,7 +38,8 @@ namespace KOILib.Common.DataAccess.Trace
             );
 
             //event raise
-            ExecuteBeginning(this, e);
+            if (ExecuteBeginning != null)
+                ExecuteBeginning.Invoke(this, e);
         }
 
         public void OnError(IDbCommand profiledDbCommand, SqlExecuteType executeType, Exception exception)
@@ -54,7 +55,8 @@ namespace KOILib.Common.DataAccess.Trace
             );
 
             //event raise
-            ErrorOccurred(this, e);
+            if (ErrorOccurred != null)
+                ErrorOccurred.Invoke(this, e);
         }
 
         public void ExecuteFinish(IDbCommand profiledDbCommand, SqlExecuteType executeType, DbDataReader reader)
@@ -73,7 +75,8 @@ namespace KOILib.Common.DataAccess.Trace
                 );
 
                 //event raise
-                ExecuteFinished(this, e);
+                if (ExecuteFinished != null)
+                    ExecuteFinished.Invoke(this, e);
             }
         }
 
@@ -89,7 +92,8 @@ namespace KOILib.Common.DataAccess.Trace
             );
 
             //event raise
-            ReaderFinished(this, e);
+            if (ReaderFinished != null)
+                ReaderFinished.Invoke(this, e);
         }
     }
 }

@@ -32,7 +32,12 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
         /// <returns></returns>
         public override bool IsValidForRequest(ControllerContext controllerContext, MethodInfo methodInfo)
         {
-            var requestValue = controllerContext.RouteData.GetRequiredString(Name);
+            var routeData = controllerContext.RouteData;
+
+            if (routeData.Values[Name] == null)
+                return false;
+
+            var requestValue = routeData.GetRequiredString(Name);
             return requestValue.EqualsAny(Values, StringComparison.Ordinal);
         }
 

@@ -300,6 +300,13 @@ namespace KOILib.Common.Log4
                     .Any(w => method.DeclaringType.FullName.StartsWith(w, StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault();
 
+            if (logMethod == null)
+            {
+                logMethod = trace.GetFrames()
+                    .Select(frame => frame.GetMethod())
+                    .FirstOrDefault();
+            }
+
             return logMethod;
         }
 

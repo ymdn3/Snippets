@@ -27,6 +27,15 @@ namespace KOILib.Common.Aspmvc.Filters
                     logging.Logger.Write(logging.LogLevel, ex);
             }
 
+            //HttpAntiForgeryException の場合はHTTP401を返す
+            if (ex is HttpAntiForgeryException)
+            {
+                filterContext.ExceptionHandled = true;
+                filterContext.HttpContext.Response.Clear();
+                filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                filterContext.HttpContext.Response.TrySkipIisCustomErrors = true;
+            }
+
             if (filterContext.HttpContext.Request.IsAjaxRequest())
             {
                 //Application_Errorは呼ばれない

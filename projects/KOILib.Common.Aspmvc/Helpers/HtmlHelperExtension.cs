@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.WebPages;
 using KOILib.Common;
 using KOILib.Common.Extensions;
 
@@ -14,6 +15,32 @@ namespace KOILib.Common.Aspmvc.Helpers
 {
     public static class HtmlHelperExtension
     {
+        #region 部分ビューからレイアウトにレンダリングを行うためのヘルパーメソッド
+        //http://stackoverflow.com/questions/5433531/using-sections-in-editor-display-templates/5433722#5433722
+        public static MvcHtmlString Script(this HtmlHelper htmlHelper, Func<object, HelperResult> template)
+        {
+            htmlHelper.ViewContext.HttpContext.Items["_script_" + Guid.NewGuid()] = template;
+            return MvcHtmlString.Empty;
+        }
+
+        public static IHtmlString RenderScripts(this HtmlHelper htmlHelper)
+        {
+            foreach (object key in htmlHelper.ViewContext.HttpContext.Items.Keys)
+            {
+                if (key.ToString().StartsWith("_script_"))
+                {
+                    var template = htmlHelper.ViewContext.HttpContext.Items[key] as Func<object, HelperResult>;
+                    if (template != null)
+                    {
+                        htmlHelper.ViewContext.Writer.Write(template(null));
+                    }
+                }
+            }
+            return MvcHtmlString.Empty;
+        }
+        #endregion
+        
+        #region dataスキームをソースとしたimgタグ生成
         public static IHtmlString Image<TModel>(this HtmlHelper<TModel> self, byte[] byteArray, dynamic htmlAttributes, string contentType = null)
         {
             var base64 = Convert.ToBase64String(byteArray);
@@ -29,6 +56,7 @@ namespace KOILib.Common.Aspmvc.Helpers
         {
             return Image(self, byteArray, null, contentType);
         }
+        #endregion
 
         #region ファイルから直接インラインに流し込むヘルパーメソッド
         private static readonly Dictionary<string, string> _inlineRenderCache = new Dictionary<string, string>();

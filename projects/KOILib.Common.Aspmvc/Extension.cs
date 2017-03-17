@@ -20,7 +20,7 @@ namespace KOILib.Common.Aspmvc
         }
 
         /// <summary>
-        /// 現在の HttpContext から呼ぶことのできる HttpWordkerRequest を元にコピーを生成し、HttpContext.Current の値に設定します。
+        /// 現在の HttpContext から呼ぶことのできる HttpWorkerRequest を元にコピーを生成し、HttpContext.Current の値に設定します。
         /// Task実行のケースでは、HttpContext.Current が null となるため、当メソッドでコピーを再設定します。
         /// ※あくまでコピーであることに注意。
         /// </summary>
