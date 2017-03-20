@@ -25,6 +25,11 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
         public IEnumerable<string> Values { get; private set; } 
 
         /// <summary>
+        /// 英字の大小を区別しないかどうか
+        /// </summary>
+        public bool IgnoreCase { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="controllerContext"></param>
@@ -38,7 +43,10 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
                 return false;
 
             var requestValue = routeData.GetRequiredString(Name);
-            return requestValue.EqualsAny(Values, StringComparison.Ordinal);
+            if (IgnoreCase)
+                return requestValue.EqualsAny(Values, StringComparison.OrdinalIgnoreCase);
+            else
+                return requestValue.EqualsAny(Values, StringComparison.Ordinal);
         }
 
         /// <summary>
