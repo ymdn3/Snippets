@@ -161,15 +161,27 @@ namespace KOILib.Common.DataAccess
         }
         #endregion
 
-        protected string[] _orders;
+        protected string[] _likeFields;
+        /// <summary>
+        /// 生成されるWHERE句で、LIKE演算子が使用されるフィールドを指定します。
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public DbContextModelBase<TConnection, TModel> LikeExpr(params string[] fields)
+        {
+            _likeFields = fields;
+            return this;
+        }
+
+        protected string[] _orderFields;
         /// <summary>
         /// FindSql()メソッドが生成するSQLに、ORDER BY句が指定されるよう設定します。
         /// </summary>
-        /// <param name="orders"></param>
+        /// <param name="fields"></param>
         /// <returns></returns>
-        public DbContextModelBase<TConnection, TModel> OrderBy(params string[] orders)
+        public DbContextModelBase<TConnection, TModel> OrderBy(params string[] fields)
         {
-            _orders = orders;
+            _orderFields = fields;
             return this;
         }
 
@@ -187,7 +199,7 @@ namespace KOILib.Common.DataAccess
             var whereFields = fields.Where(field => HasValue(field));
             var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
 
-            var sql = SelectSql<TModel>(fields, whereCriteria, orders ?? _orders, schema);
+            var sql = SelectSql<TModel>(fields, whereCriteria, orders ?? _orderFields, schema);
             return sql;
         }
 
@@ -319,6 +331,33 @@ namespace KOILib.Common.DataAccess
         }
 
         /// <summary>
+        /// バインドパラメータと指定の演算子の式(FIELDNAME OPE %FIELDNAME)を組み立てます
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="operator"></param>
+        /// <returns></returns>
+        public virtual string BuildExpression(string field, string @operator)
+        {
+            var prefix = BindPrefix();
+            return BuildExpression(field, @operator, prefix);
+        }
+
+        /// <summary>
+        /// WHERE句のための式を組み立てます
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        public virtual IEnumerable<string> BuildWhereExpressions(IEnumerable<string> fields)
+        {
+            return fields.Select((field) =>
+            {
+                //演算子選択
+                var ope = (_likeFields != null && _likeFields.Contains(field)) ? "LIKE" : "=";
+                return BuildExpression(field, ope);
+            });
+        }
+
+        /// <summary>
         /// WHERE句を組み立てます
         /// </summary>
         /// <param name="fields"></param>
@@ -326,7 +365,8 @@ namespace KOILib.Common.DataAccess
         /// <returns></returns>
         public virtual string BuildWhereCriteria(IEnumerable<string> fields, bool useOR)
         {
-            return BuildWhereCriteria<TConnection>(fields, useOR);
+            var expressions = BuildWhereExpressions(fields);
+            return string.Join(useOR ? " OR " : " AND ", expressions);
         }
 
         /// <summary>
@@ -344,7 +384,7 @@ namespace KOILib.Common.DataAccess
         /// </summary>
         /// <param name="fieldname"></param>
         /// <returns></returns>
-        protected bool HasValue(string fieldname)
+        public bool HasValue(string fieldname)
         {
             //Modelがもつ指定の名前の値を取得する
             var pi = typeof(TModel).GetProperty(fieldname);
@@ -560,6 +600,18 @@ namespace KOILib.Common.DataAccess
         }
 
         /// <summary>
+        /// バインドパラメータと指定の演算子の式(FIELDNAME OPE %FIELDNAME)を組み立てます
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="bindprefix"></param>
+        /// <param name="operator"></param>
+        /// <returns></returns>
+        protected static string BuildExpression(string field, string @operator, char bindprefix)
+        {
+            return string.Format("{2} {0} {1}{2}", @operator, bindprefix, field);
+        }
+
+        /// <summary>
         /// バインドパラメータとイコール記号の式（FIELDNAME=%FIELDNAME）を組み立てます
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -568,8 +620,24 @@ namespace KOILib.Common.DataAccess
         protected static IEnumerable<string> BuildEqExpressions<T>(IEnumerable<string> fields)
             where T : DbConnection
         {
+            var @operator = "=";
             var bindprefix = BindPrefix<T>();
-            var expressions = fields.Select((field) => string.Format("{1}={0}{1}", bindprefix, field));
+            var expressions = fields.Select((field) => BuildExpression(field, @operator, bindprefix));
+            return expressions;
+        }
+
+        /// <summary>
+        /// バインドパラメータとLIKE演算子の式（FIELDNAME LIKE %FIELDNAME）を組み立てます
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fields"></param>
+        /// <returns></returns>
+        protected static IEnumerable<string> BuildLikeExpressions<T>(IEnumerable<string> fields)
+            where T : DbConnection
+        {
+            var @operator = "LIKE";
+            var bindprefix = BindPrefix<T>();
+            var expressions = fields.Select((field) => BuildExpression(field, @operator, bindprefix));
             return expressions;
         }
 
@@ -580,6 +648,7 @@ namespace KOILib.Common.DataAccess
         /// <param name="fields"></param>
         /// <param name="useOR"></param>
         /// <returns></returns>
+        [Obsolete("LIKE演算子の式考慮のため削除されました", true)]
         protected static string BuildWhereCriteria<T>(IEnumerable<string> fields, bool useOR)
             where T : DbConnection
         {

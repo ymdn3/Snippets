@@ -182,15 +182,17 @@ namespace KOILib.Common.Extensions
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
-        public static string[] SplitByCommaOrFeed(this string self)
+        public static string[] SplitByCommaOrFeed(this string self, bool remainEmpty = false)
         {
             if (string.IsNullOrWhiteSpace(self))
                 return new string[] { };
 
+
             //空白とタブの削除
             var value = System.Text.RegularExpressions.Regex.Replace(self, @"[ 　\t]", "", System.Text.RegularExpressions.RegexOptions.Compiled);
             //改行・カンマ分離
-            var values = value.Split(new char[] { '\r', '\n', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var option = remainEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries;
+            var values = value.Split(new char[] { '\r', '\n', ',' }, option);
             return values;
         }
         #endregion

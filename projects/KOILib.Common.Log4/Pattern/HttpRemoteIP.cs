@@ -18,6 +18,7 @@ namespace KOILib.Common.Log4.Pattern
     public class HttpRemoteIP
         : PatternLayoutConverter
     {
+        private Dictionary<string, string> _convertCache;
 
         /// <summary>
         /// Derived pattern converters must override this method in order to convert conversion specifiers in the correct way.
@@ -26,22 +27,40 @@ namespace KOILib.Common.Log4.Pattern
         /// <param name="loggingEvent">The log4net.Core.LoggingEvent on which the pattern converter should be executed.</param>
         protected override void Convert(TextWriter writer, LoggingEvent loggingEvent)
         {
-            var ipaddr = "0.0.0.0";
+            const string unknown = "0.0.0.0";
+            var ipaddr = unknown;
             var context = HttpContext.Current;
             if (context != null)
             {
+                if (_convertCache == null)
+                    _convertCache = new Dictionary<string, string>();
+
+                var hostaddr = default(string);
                 try
                 {
                     if (context.Request != null)
-                        ipaddr = ConvertToIPv4(context.Request.UserHostAddress);
+                        hostaddr = context.Request.UserHostAddress;
+
+                    if (_convertCache.ContainsKey(hostaddr))
+                    {
+                        ipaddr = _convertCache[hostaddr];
+                    }
+                    else
+                    {
+                        try
+                        {
+                            ipaddr = ConvertToIPv4(hostaddr);
+                        }
+                        catch (Exception e)
+                        {
+                            ipaddr = e.GetType().Name;
+                        }
+                        _convertCache.Add(hostaddr, ipaddr);
+                    }
                 }
                 catch (HttpException)
                 {
                     //NOOP
-                }
-                catch (Exception e)
-                {
-                    ipaddr = e.GetType().Name;
                 }
             }
             writer.Write(ipaddr);
@@ -53,13 +72,9 @@ namespace KOILib.Common.Log4.Pattern
             var ipv4 = iphEntry.AddressList
                 .FirstOrDefault((entry) => entry.AddressFamily == AddressFamily.InterNetwork);
             if (ipv4 == default(IPAddress))
-            {
                 return addr;
-            }
             else
-            {
                 return ipv4.ToString();
-            }
         }
 
     }
