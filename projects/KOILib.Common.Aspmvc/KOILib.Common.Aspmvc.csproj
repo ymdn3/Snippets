@@ -74,7 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationStateUtilityBase.cs" />
-    <Compile Include="Extension.cs" />
     <Compile Include="Filters\GeneralHandleErrorAttribute.cs" />
     <Compile Include="Filters\RequiredFormAttribute.cs" />
     <Compile Include="Helpers\AjaxHelperExtension.cs" />
