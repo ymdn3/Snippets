@@ -81,6 +81,7 @@ namespace KOILib.Common.Log4
         /// <returns></returns>
         public virtual void Fatal(MethodBase method, Exception ex)
         {
+            Write(LogLevel.Error, method, ex.Message);
             Write(LogLevel.Fatal, method, ex);
         }
 

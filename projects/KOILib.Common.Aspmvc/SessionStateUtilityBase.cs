@@ -13,18 +13,109 @@ namespace KOILib.Common.Aspmvc
     {
         protected HttpSessionStateBase _HttpSession;
 
-        protected T Get<T>(string key, bool atOnce)
+        #region 有効期限管理
+        protected static readonly string _KeyOfExpireTime = "##EXPIRE_TIME##";
+        protected TimeSpan Lifetime { get; set; }
+        protected ConcurrentDictionary<string, DateTime> _ExpireTime
         {
+            get
+            {
+                if (_HttpSession[_KeyOfExpireTime] != null)
+                    return (ConcurrentDictionary<string, DateTime>)_HttpSession[_KeyOfExpireTime];
+
+                _HttpSession[_KeyOfExpireTime] = new ConcurrentDictionary<string, DateTime>();
+                return _ExpireTime;
+            }
+        }
+        /// <summary>
+        /// 期限切れのキー値をすべて削除します
+        /// </summary>
+        protected void SweepExpired()
+        {
+            lock (_ExpireTime)
+            {
+                var utcReferenceTime = DateTime.UtcNow;
+                _ExpireTime
+                    .Where(x => x.Value < utcReferenceTime)
+                    .Each(x => Remove(x.Key));
+            }
+        }
+        /// <summary>
+        /// 指定のキーが期限切れかどうかを判断します
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected bool IsExpired(string key)
+        {
+            lock (_ExpireTime)
+            {
+                var utcReferenceTime = DateTime.UtcNow;
+                if (_ExpireTime.ContainsKey(key))
+                    if (_ExpireTime[key] < utcReferenceTime)
+                        return true;
+                return false;
+            }
+        }
+        /// <summary>
+        /// 指定のキー値に所定の有効期限を設定します
+        /// </summary>
+        /// <param name="key"></param>
+        protected void SetExpire(string key)
+        {
+            lock (_ExpireTime)
+            {
+                var expire = DateTime.UtcNow.Add(Lifetime);
+                _ExpireTime.AddOrUpdate(key, expire, (k, v) => expire);
+            }
+        }
+        /// <summary>
+        /// 指定のキー値が有効期限管理されている場合に、有効期限をリセットします
+        /// </summary>
+        /// <param name="key"></param>
+        protected void ResetExpire(string key)
+        {
+            lock (_ExpireTime)
+            {
+                if (_ExpireTime.ContainsKey(key))
+                {
+                    var expire = DateTime.UtcNow.Add(Lifetime);
+                    _ExpireTime.TryUpdate(key, expire, _ExpireTime[key]);
+                }
+            }
+        }
+        #endregion
+
+        protected TValue Get<TValue>(string key, bool atOnce)
+        {
+            //有効期限切れオブジェクトの整理
+            SweepExpired();
+
             if (_HttpSession[key] == null)
-                return default(T);
+                return default(TValue);
 
             var value = _HttpSession[key];
 
             if (atOnce)
-                _HttpSession.Remove(key);
+                this.Remove(key);
 
-            _ExpireManager.ResetExpire(key);
-            return (T)value;
+            //参照で有効期限を延長
+            ResetExpire(key);
+
+            return (TValue)value;
+        }
+
+        protected void Set<TValue>(string key, TValue value, bool noExpire)
+        {
+            _HttpSession.Remove(key);
+            _HttpSession[key] = value;
+
+            if (!noExpire)
+                SetExpire(key);
+        }
+
+        public void Set<TValue>(string key, TValue value)
+        {
+            Set(key, value, noExpire: false);
         }
 
         public void Abandon()
@@ -35,86 +126,39 @@ namespace KOILib.Common.Aspmvc
         public void Clear()
         {
             _HttpSession.Clear();
-            _ExpireManager.Clear();
         }
 
-        public void Set<T>(string key, T value, bool noExpire)
+        public void Remove(string key)
         {
             _HttpSession.Remove(key);
-            _HttpSession[key] = value;
 
-            if (!noExpire)
-                _ExpireManager.SetExpire(key);
-        }
-        public void Set<T>(string key, T value)
-        {
-            Set(key, value, noExpire: false);
+            var t = DateTime.Now;
+            _ExpireTime.TryRemove(key, out t);
         }
 
         public bool Exists(string key)
         {
+            if (IsExpired(key))
+                return false;
             return (_HttpSession[key] != null);
         }
 
-        public T GetOnce<T>(string key)
+        public TValue GetOnce<TValue>(string key)
         {
-            return Get<T>(key, true);
+            return Get<TValue>(key, true);
         }
+
 
         public SessionStateUtilityBase(HttpContext context) : this(new HttpSessionStateWrapper(context.Session))
         {
         }
-        public SessionStateUtilityBase(HttpSessionState session) : this(new HttpSessionStateWrapper(session))
+        public SessionStateUtilityBase(HttpSessionState state) : this(new HttpSessionStateWrapper(state))
         {
         }
-        public SessionStateUtilityBase(HttpSessionStateBase session)
+        public SessionStateUtilityBase(HttpSessionStateBase state)
         {
-            _HttpSession = session;
-            _ExpireManager = new ExpireManager(_HttpSession, 60 * 1000);
-        }
-
-        internal ExpireManager _ExpireManager;
-        internal class ExpireManager : WatcherBase
-        {
-            private HttpSessionStateBase _session;
-            private ConcurrentDictionary<string, DateTime> _expireTime;
-
-            protected override void TimerElapsedBody()
-            {
-                Sweep(DateTime.UtcNow);
-            }
-            internal void Sweep(DateTime utcReferenceTime)
-            {
-                _expireTime
-                    .Where(x => x.Value < utcReferenceTime)
-                    .ParallelDo(x => Expire(x.Key));
-            }
-            internal void Expire(string key)
-            {
-                var t = DateTime.UtcNow;
-                if (_expireTime.TryRemove(key, out t))
-                    _session.Remove(key);
-            }
-            internal void SetExpire(string key)
-            {
-                var extend = _session.Timeout;// Timeout設定分の延長
-                _expireTime.AddOrUpdate(key, DateTime.UtcNow.AddMinutes(extend), (_, t) => t.AddMinutes(extend));
-            }
-            internal void ResetExpire(string key)
-            {
-                if (_expireTime.ContainsKey(key))
-                    SetExpire(key);
-            }
-            internal void Clear()
-            {
-                _expireTime.Clear();
-            }
-            public ExpireManager(HttpSessionStateBase session, int interval)
-            {
-                _session = session;
-                _expireTime = new ConcurrentDictionary<string, DateTime>();
-                this.Start(interval);
-            }
+            _HttpSession = state;
+            Lifetime = new TimeSpan(0, state.Timeout, 0);
         }
     }
 }

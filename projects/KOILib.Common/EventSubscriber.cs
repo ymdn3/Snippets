@@ -24,5 +24,9 @@ namespace KOILib.Common
                 return Create(null);
             }
         }
+        public static IDisposable Create(object target, string eventname, Action handler)
+        {
+            return Create(target, eventname, (Delegate)handler);
+        }
     }
 }

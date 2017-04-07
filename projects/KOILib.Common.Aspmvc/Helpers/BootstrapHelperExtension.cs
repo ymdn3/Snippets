@@ -27,7 +27,7 @@ namespace KOILib.Common.Aspmvc.Helpers
             tb.AddCssClass(classname.StartsWith(g) ? classname
                                                     : g + "-" + classname);
             if (htmlAttributes != null)
-                tb.MergeAttributes(((object)htmlAttributes).ToFlattenDictionary("-"), true);
+                tb.MergeAttributes(Utils.ToFlattenDictionary(htmlAttributes, "-"), true);
             return tb;
         }
         /// <summary>

@@ -49,7 +49,7 @@ namespace KOILib.Common.Aspmvc.Helpers
             var tb = new TagBuilder("img");
             tb.Attributes.Add("src", imgsrc);
             if (htmlAttributes != null)
-                tb.MergeAttributes(((object)htmlAttributes).ToFlattenDictionary("-"), true);
+                tb.MergeAttributes(Utils.ToFlattenDictionary(htmlAttributes, "-"), true);
             return MvcHtmlString.Create(tb.ToString(TagRenderMode.SelfClosing));
         }
         public static IHtmlString Image<TModel>(this HtmlHelper<TModel> self, byte[] byteArray, string contentType = null)
@@ -67,7 +67,7 @@ namespace KOILib.Common.Aspmvc.Helpers
             var sb = new StringBuilder();
             using (var w = new StringWriter(sb))
             {
-                virtualPathes.ParallelDo((virtualPath) => self.AppendTo(w, virtualPath));
+                virtualPathes.Each((virtualPath) => self.AppendTo(w, virtualPath));
             }
             return MvcHtmlString.Create(sb.ToString());
         }

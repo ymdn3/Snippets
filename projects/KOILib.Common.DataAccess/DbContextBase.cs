@@ -56,6 +56,22 @@ namespace KOILib.Common.DataAccess
         }
 
         /// <summary>
+        /// 接続文字列より、指定キーの値を取得します。
+        /// </summary>
+        /// <param name="srcConnstr"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static string GetConnectionStringElement(string srcConnstr, string key)
+        {
+            var cb = new DbConnectionStringBuilder();
+            cb.ConnectionString = srcConnstr;
+            if (cb.ContainsKey(key))
+                return (string)cb[key];
+            else
+                return default(string);
+        }
+
+        /// <summary>
         /// SQLログテキストを構築します（標準）
         /// </summary>
         /// <param name="e"></param>

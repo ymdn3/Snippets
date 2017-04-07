@@ -45,6 +45,17 @@ namespace KOILib.Common.Extensions
         /// </summary>
         /// <param name="self"></param>
         /// <param name="value">dynamicオブジェクト</param>
+        public static void AddKeyValue(this IDictionary<string, object> self, object value)
+        {
+            if (value != null)
+                AddKeyValue(self, null, value, null);
+        }
+        /// <summary>
+        /// Dynamicオブジェクト(new {})をDictionaryに追加します。
+        /// ネストオブジェクトはプロパティ名を連結し、フラットな状態に変換します。
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="value">dynamicオブジェクト</param>
         /// <param name="nameseparator">プロパティ名連結セパレータ</param>
         public static void AddKeyValue(this IDictionary<string, object> self, object value, string nameseparator)
         {
@@ -88,21 +99,23 @@ namespace KOILib.Common.Extensions
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void Do<T>(this IEnumerable<T> source, Action<T> action)
+        public static void Each<T>(this IEnumerable<T> source, Action<T> action)
         {
             foreach (var item in source)
                 action(item);
         }
 
         /// <summary>
-        /// このインスタンスの列挙子すべてに、指定の処理を並列で行います。
+        /// このインスタンスの列挙子すべてに、指定の処理を行います。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
         /// <param name="action"></param>
-        public static void ParallelDo<T>(this IEnumerable<T> source, Action<T> action)
+        /// <returns></returns>
+        public static async Task EachAsync<T>(this IEnumerable<T> source, Action<T> action)
         {
-            Parallel.ForEach(source, action);
+            var tasks = source.Select(item => Task.Run(() => action(item)));
+            await tasks.WhenAll();
         }
 
         /// <summary>

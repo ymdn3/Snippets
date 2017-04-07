@@ -15,6 +15,7 @@ namespace KOILib.Common
     {
 
         public static readonly int INSTANCE_HASHCODE_LEN = (System.Environment.Is64BitProcess ? 64 : 32) / 4;
-        
+
+        public static readonly Encoding SJIS_ENCODING = Encoding.GetEncoding("Shift_JIS");
     }
 }

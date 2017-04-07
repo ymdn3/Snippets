@@ -14,7 +14,7 @@ namespace KOILib.Common.Aspmvc.Helpers
     {
         public static MvcForm BeginForm<TModel>(this AjaxHelper<TModel> self, AjaxOptions ajaxOptions, object htmlAttributes)
         {
-            return self.BeginForm(null, null, ajaxOptions, htmlAttributes.ToFlattenDictionary("-"));
+            return self.BeginForm(null, null, ajaxOptions, Utils.ToFlattenDictionary(htmlAttributes, "-"));
         }
     }
 }
