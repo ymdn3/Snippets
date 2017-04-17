@@ -70,7 +70,7 @@ namespace KOILib.Common.Log4.Pattern
         {
             var iphEntry = Dns.GetHostEntry(addr);
             var ipv4 = iphEntry.AddressList
-                .FirstOrDefault((entry) => entry.AddressFamily == AddressFamily.InterNetwork);
+                .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
             if (ipv4 == default(IPAddress))
                 return addr;
             else

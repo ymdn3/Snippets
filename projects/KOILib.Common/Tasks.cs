@@ -10,7 +10,7 @@ namespace KOILib.Common
     {
         public static IEnumerable<Task> From(IEnumerable<Action> actions)
         {
-            return actions.Select(action => Task.Run(action));
+            return actions.Select(x => Task.Run(x));
         }
         
         public static IEnumerable<Task> From(params Action[] actions)
@@ -20,7 +20,7 @@ namespace KOILib.Common
 
         public static IEnumerable<Task<T>> From<T>(IEnumerable<Func<T>> functions)
         {
-            return functions.Select(function => Task.Run(function));
+            return functions.Select(x => Task.Run(x));
         }
         
         public static IEnumerable<Task<T>> From<T>(params Func<T>[] functions)

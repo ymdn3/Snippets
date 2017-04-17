@@ -36,6 +36,23 @@ namespace KOILib.Common.Extensions
         /// </summary>
         /// <typeparam name="T">戻り値の型</typeparam>
         /// <param name="self">System.Configuration.AppSettingsReader</param>
+        /// <param name="key">キー</param>
+        /// <param name="valueWhenFailed">パースが失敗したときの値</param>
+        /// <returns></returns>
+        public static T GetValue<T>(this AppSettingsReader self, string key, T valueWhenFailed)
+        {
+            var v = valueWhenFailed;
+            if (self.TryGetValue(key, ref v))
+                return v;
+            else
+                return valueWhenFailed;
+        }
+
+        /// <summary>
+        /// AppSettingsより指定のキー値を取得します。
+        /// </summary>
+        /// <typeparam name="T">戻り値の型</typeparam>
+        /// <param name="self">System.Configuration.AppSettingsReader</param>
         /// <param name="key"></param>
         /// <returns></returns>
         public static T GetValue<T>(this AppSettingsReader self, string key)

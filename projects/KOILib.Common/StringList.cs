@@ -156,9 +156,9 @@ namespace KOILib.Common
         public StringList RemoveEmpty(bool withWhitespace)
         {
             if (withWhitespace)
-                this.RemoveAll(s => string.IsNullOrWhiteSpace(s));
+                this.RemoveAll(x => string.IsNullOrWhiteSpace(x));
             else
-                this.RemoveAll(s => string.IsNullOrEmpty(s));
+                this.RemoveAll(x => string.IsNullOrEmpty(x));
             return this;
         }
 
@@ -248,6 +248,7 @@ namespace KOILib.Common
         /// <returns></returns>
         public string ToString(params object[] args)
         {
+            DecorateInfo = DecorateInfo ?? StringListDecoration.From();
             var delimiterIsEmpty = DecorateInfo.DelimiterIsEmpty;
             var preQuotIsEmpty = DecorateInfo.PreQuoteIsEmpty;
             var postQuotIsEmpty = DecorateInfo.PostQuoteIsEmpty;
@@ -277,16 +278,6 @@ namespace KOILib.Common
                 return string.Format(sb.ToString(), args);
             else
                 return sb.ToString();
-        }
-
-        /// <summary>
-        /// string を生成します
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            DecorateInfo = DecorateInfo ?? StringListDecoration.From();
-            return ToString(DecorateInfo);
         }
         #endregion
 

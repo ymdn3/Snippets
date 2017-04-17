@@ -15,7 +15,7 @@ namespace KOILib.Common.Aspmvc.Filters
         public virtual void OnAuthorization(AuthorizationContext filterContext)
         {
             var req = filterContext.HttpContext.Request;
-            var valid = Names.All(name => !string.IsNullOrEmpty(req.Form[name]));
+            var valid = Names.All(x => !string.IsNullOrEmpty(req.Form[x]));
 
             if (!valid)
                 throw new Exception("invalid in requirements.");

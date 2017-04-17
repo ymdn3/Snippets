@@ -20,7 +20,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool EqualsAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
         {
-            return values.Any(value => self.Equals(value, comparisonType));
+            return values.Any(x => self.Equals(x, comparisonType));
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool EqualsAny(this string self, IEnumerable<string> values)
         {
-            return values.Any(value => self.Equals(value));
+            return values.Any(x => self.Equals(x));
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool StartsWithAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
         {
-            return values.Any(value => self.StartsWith(value, comparisonType));
+            return values.Any(x => self.StartsWith(x, comparisonType));
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool StartsWithAny(this string self, IEnumerable<string> values)
         {
-            return values.Any(value => self.StartsWith(value));
+            return values.Any(x => self.StartsWith(x));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool EndsWithAny(this string self, IEnumerable<string> values, StringComparison comparisonType)
         {
-            return values.Any(value => self.EndsWith(value, comparisonType));
+            return values.Any(x => self.EndsWith(x, comparisonType));
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace KOILib.Common.Extensions
         /// <returns></returns>
         public static bool EndsWithAny(this string self, IEnumerable<string> values)
         {
-            return values.Any(value => self.EndsWith(value));
+            return values.Any(x => self.EndsWith(x));
         }
 
         /// <summary>

@@ -2,10 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web;
 using System.Web.SessionState;
 using KOILib.Common.Extensions;
+using Newtonsoft.Json;
 
 namespace KOILib.Common.Aspmvc
 {
@@ -82,6 +82,35 @@ namespace KOILib.Common.Aspmvc
                     _ExpireTime.TryUpdate(key, expire, _ExpireTime[key]);
                 }
             }
+        }
+        #endregion
+
+        #region JSON変換
+        /// <summary>
+        /// JSON形式に変換してセットします
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">格納キー</param>
+        /// <param name="value"></param>
+        protected void SetJsonified<T>(string key, T value)
+        {
+            var json = JsonConvert.SerializeObject(value);
+            Set(key, json);
+        }
+
+        /// <summary>
+        /// JSON形式でセットされた値を取得します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">格納キー</param>
+        /// <returns></returns>
+        protected T GetOnceJsonified<T>(string key)
+        {
+            var json = Get<string>(key, atOnce: true);
+            if (json != null)
+                return JsonConvert.DeserializeObject<T>(json);
+            else
+                return default(T);
         }
         #endregion
 

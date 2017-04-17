@@ -14,7 +14,7 @@ namespace KOILib.Common.DataAccess.Trace
         {
             var t = new StringList(parameters
                 .Cast<DbParameter>()
-                .Select(p => p.ToLogString())
+                .Select(x => x.ToLogString())
             );
             return t.Decorate(sep: ",").ToString();
         }

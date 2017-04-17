@@ -19,7 +19,7 @@ namespace KOILib.Common
         public static bool EqualsAny<T>(this T self, IEnumerable<T> values)
             where T : struct
         {
-            return values.Any(value => self.Equals(value));
+            return values.Any(x => self.Equals(x));
         }
         #endregion
 
@@ -41,7 +41,7 @@ namespace KOILib.Common
         {
             var iphEntry = Dns.GetHostEntry(addr);
             var ipv4 = iphEntry.AddressList
-                .FirstOrDefault((entry) => entry.AddressFamily == AddressFamily.InterNetwork);
+                .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
             if (ipv4 == default(IPAddress))
                 return addr;
             else

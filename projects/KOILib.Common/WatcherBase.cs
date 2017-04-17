@@ -17,9 +17,19 @@ namespace KOILib.Common
         #endregion
 
         /// <summary>
-        /// 定時処理本体
+        /// 監視起動時イベント
         /// </summary>
-        protected abstract void TimerElapsedBody();
+        public event EventHandler WatcherStarted;
+
+        /// <summary>
+        /// 監視停止時イベント
+        /// </summary>
+        public event EventHandler WatcherStopped;
+
+        /// <summary>
+        /// 監視タイミング時イベント
+        /// </summary>
+        public event EventHandler WatcherTimeElapsed;
 
         /// <summary>
         /// 実行ロックオブジェクト
@@ -46,6 +56,13 @@ namespace KOILib.Common
         /// </summary>
         private DateTime nextWatchTime;
 
+        /// <summary>
+        /// 監視中であるかどうかを返します。
+        /// </summary>
+        public bool IsWatching
+        {
+            get { return watchTimer.Enabled; }
+        }
 
         /// <summary>
         /// 監視を起動します
@@ -62,6 +79,19 @@ namespace KOILib.Common
             //監視タイマー起動
             watchTimer.Interval = InternalTimerResolution; //internal timer resolution msec.
             watchTimer.Start();
+
+            //起動イベントトリガー
+            OnWatcherStarted(EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 監視起動イベントトリガー
+        /// </summary>
+        /// <param name="e"></param>
+        protected virtual void OnWatcherStarted(EventArgs e)
+        {
+            if (WatcherStarted != null)
+                WatcherStarted.Invoke(this, e);
         }
 
         /// <summary>
@@ -71,6 +101,20 @@ namespace KOILib.Common
         {
             //監視タイマー停止
             watchTimer.Stop();
+
+            //停止イベントトリガー
+            if (WatcherStopped != null)
+                WatcherStopped.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 監視停止イベントトリガー
+        /// </summary>
+        /// <param name="e"></param>
+        protected virtual void OnWatcherStopped(EventArgs e)
+        {
+            if (WatcherStopped != null)
+                WatcherStopped.Invoke(this, e);
         }
 
         /// <summary>
@@ -82,6 +126,40 @@ namespace KOILib.Common
         }
 
         /// <summary>
+        /// 監視タイミング処理
+        /// </summary>
+        public virtual void TimerElapse()
+        {
+            try
+            {
+                //次回監視時刻を経過していない場合、何もしない
+                if (DateTime.UtcNow < nextWatchTime) { return; }
+
+                //監視タイミングイベントトリガー
+                if (WatcherTimeElapsed != null)
+                    WatcherTimeElapsed.Invoke(this, EventArgs.Empty);
+
+                //次回監視時刻の設定
+                UpdateNextWatchTime();
+            }
+            catch
+            {
+                //サービス停止
+                Stop();
+            }
+        }
+
+        /// <summary>
+        /// 監視タイミングイベントトリガー
+        /// </summary>
+        /// <param name="e"></param>
+        protected virtual void OnWatcherTimeElapsed(EventArgs e)
+        {
+            if (WatcherTimeElapsed != null)
+                WatcherTimeElapsed.Invoke(this, e);
+        }
+
+        /// <summary>
         /// 監視タイマーイベントハンドラ
         /// </summary>
         /// <param name="sender"></param>
@@ -90,22 +168,7 @@ namespace KOILib.Common
         {
             lock (lockObj)
             {
-                try
-                {
-                    //次回監視時刻を経過していない場合、何もしない
-                    if (DateTime.UtcNow < nextWatchTime) { return; }
-
-                    //定時処理
-                    TimerElapsedBody();
-
-                    //次回監視時刻の設定
-                    UpdateNextWatchTime();
-                }
-                catch
-                {
-                    //サービス停止
-                    Stop();
-                }
+                TimerElapse();
             }
         }
 
@@ -137,7 +200,7 @@ namespace KOILib.Common
         // }
 
         // このコードは、破棄可能なパターンを正しく実装できるように追加されました。
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを上の Dispose(bool disposing) に記述します。
             Dispose(true);
@@ -154,7 +217,7 @@ namespace KOILib.Common
             watchTimer = new Timer();
 
             //タイマーイベントハンドラ登録
-            subscriberWatchTimerElapsed = EventSubscriber.Create(watchTimer, "Elapsed", (ElapsedEventHandler)Timer_Elapsed);
+            subscriberWatchTimerElapsed = EventSubscriber.Create(watchTimer, nameof(watchTimer.Elapsed), (ElapsedEventHandler)Timer_Elapsed);
         }
     }
 }

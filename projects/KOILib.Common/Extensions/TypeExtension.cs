@@ -37,7 +37,7 @@ namespace KOILib.Common.Extensions
                 return (TReturn)self.InvokeMember(methodName, attr, null, null, methodArgs); //→System.MissingMethodException
 
             var method = self.GetMethods(attr)
-                .FirstOrDefault(m => m.Name == methodName);
+                .FirstOrDefault(x => x.Name == methodName);
             if (method != null)
                 return (TReturn)method.Invoke(null, attr, null, methodArgs, System.Globalization.CultureInfo.CurrentCulture);
             else

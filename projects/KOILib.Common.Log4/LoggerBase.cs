@@ -291,20 +291,20 @@ namespace KOILib.Common.Log4
             var trace = ex == null 
                 ? new StackTrace(fNeedFileInfo: true) 
                 : new StackTrace(ex, fNeedFileInfo: true);
-            if (trace == null)
+            if (trace == null || trace.FrameCount == 0)
                 return default(MethodBase);
 
             var logMethod = trace.GetFrames()
-                .Select(frame => frame.GetMethod())
-                .Where(method => method.DeclaringType != null)
-                .Where(method => InvokerDeclarations
-                    .Any(w => method.DeclaringType.FullName.StartsWith(w, StringComparison.OrdinalIgnoreCase)))
+                .Select(x => x.GetMethod())
+                .Where(x => x.DeclaringType != null)
+                .Where(x => InvokerDeclarations
+                    .Any(y => x.DeclaringType.FullName.StartsWith(y, StringComparison.OrdinalIgnoreCase)))
                 .FirstOrDefault();
 
             if (logMethod == null)
             {
                 logMethod = trace.GetFrames()
-                    .Select(frame => frame.GetMethod())
+                    .Select(x => x.GetMethod())
                     .FirstOrDefault();
             }
 

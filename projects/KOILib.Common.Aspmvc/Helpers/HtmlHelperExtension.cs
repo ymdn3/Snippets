@@ -67,7 +67,7 @@ namespace KOILib.Common.Aspmvc.Helpers
             var sb = new StringBuilder();
             using (var w = new StringWriter(sb))
             {
-                virtualPathes.Each((virtualPath) => self.AppendTo(w, virtualPath));
+                virtualPathes.Each(x => self.AppendTo(w, x));
             }
             return MvcHtmlString.Create(sb.ToString());
         }

@@ -112,10 +112,10 @@ namespace KOILib.Common.Extensions
         /// <param name="source"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static async Task EachAsync<T>(this IEnumerable<T> source, Action<T> action)
+        public static async Task EachAsync<T>(this IEnumerable<T> source, Action<T> action, bool configureAwait)
         {
-            var tasks = source.Select(item => Task.Run(() => action(item)));
-            await tasks.WhenAll();
+            var tasks = source.Select(x => Task.Run(() => action(x)));
+            await tasks.WhenAll().ConfigureAwait(configureAwait);
         }
 
         /// <summary>

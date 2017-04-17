@@ -196,7 +196,7 @@ namespace KOILib.Common.DataAccess
             var fields = GetMappedFields();
 
             //インスタンスプロパティが値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = fields.Where(field => HasValue(field));
+            var whereFields = fields.Where(x => HasValue(x));
             var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
 
             var sql = SelectSql<TModel>(fields, whereCriteria, orders ?? _orderFields, schema);
@@ -246,11 +246,11 @@ namespace KOILib.Common.DataAccess
         public virtual StringList InsertSql(string schema = null)
         {
             //インスタンスプロパティがTimestamp属性でなく、値を持つ場合、そのフィールドをINSERT対象列とする
-            var fields = GetMappedFieldsWithoutTimestamp().Where(field => HasValue(field));
+            var fields = GetMappedFieldsWithoutTimestamp().Where(x => HasValue(x));
 
             //バインドパラメータのプリフィックスを付ける
             var prefix = BindPrefix();
-            var values = fields.Select((f) => prefix + f);
+            var values = fields.Select(x => prefix + x);
 
             var sql = InsertSql<TModel>(fields, values, schema);
             return sql;
@@ -282,7 +282,7 @@ namespace KOILib.Common.DataAccess
             var setStatement = BuildSetStatement(setFields);
 
             //インスタンスプロパティがKeyまたはTimestamp属性で、値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = GetKeyAndTimestampFields().Where(field => HasValue(field));
+            var whereFields = GetKeyAndTimestampFields().Where(x => HasValue(x));
             var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
 
             var sql = UpdateSql<TModel>(setStatement, whereCriteria, schema);
@@ -311,7 +311,7 @@ namespace KOILib.Common.DataAccess
         public virtual StringList DeleteSql(string schema = null)
         {
             //インスタンスプロパティがKeyまたはTimestamp属性の値を持つ場合、そのフィールドを絞り込み条件とする
-            var whereFields = GetKeyAndTimestampFields().Where(field => HasValue(field));
+            var whereFields = GetKeyAndTimestampFields().Where(x => HasValue(x));
             var whereCriteria = BuildWhereCriteria(whereFields, useOR: false);
 
             var sql = DeleteSql<TModel>(whereCriteria, schema);
@@ -349,11 +349,11 @@ namespace KOILib.Common.DataAccess
         /// <returns></returns>
         public virtual IEnumerable<string> BuildWhereExpressions(IEnumerable<string> fields)
         {
-            return fields.Select((field) =>
+            return fields.Select(x =>
             {
                 //演算子選択
-                var ope = (_likeFields != null && _likeFields.Contains(field)) ? "LIKE" : "=";
-                return BuildExpression(field, ope);
+                var ope = (_likeFields != null && _likeFields.Contains(x)) ? "LIKE" : "=";
+                return BuildExpression(x, ope);
             });
         }
 
@@ -622,7 +622,7 @@ namespace KOILib.Common.DataAccess
         {
             var @operator = "=";
             var bindprefix = BindPrefix<T>();
-            var expressions = fields.Select((field) => BuildExpression(field, @operator, bindprefix));
+            var expressions = fields.Select(x => BuildExpression(x, @operator, bindprefix));
             return expressions;
         }
 
@@ -637,7 +637,7 @@ namespace KOILib.Common.DataAccess
         {
             var @operator = "LIKE";
             var bindprefix = BindPrefix<T>();
-            var expressions = fields.Select((field) => BuildExpression(field, @operator, bindprefix));
+            var expressions = fields.Select(x => BuildExpression(x, @operator, bindprefix));
             return expressions;
         }
 
@@ -714,10 +714,10 @@ namespace KOILib.Common.DataAccess
         /// <returns></returns>
         protected static IEnumerable<string> GetFieldsNor<T>(params Type[] nor_attributes)
         {
-            Func<CustomAttributeData, bool> predicate = attr => nor_attributes.All(t => !attr.AttributeType.Equals(t));
+            Func<CustomAttributeData, bool> predicate = attr => nor_attributes.All(x => !attr.AttributeType.Equals(x));
             var fields = typeof(T).GetProperties()
-                .Where(f => f.CustomAttributes.All(predicate))
-                .Select(f => f.Name);
+                .Where(x => x.CustomAttributes.All(predicate))
+                .Select(x => x.Name);
             return fields;
         }
 
@@ -728,10 +728,10 @@ namespace KOILib.Common.DataAccess
         /// <returns></returns>
         protected static IEnumerable<string> GetFieldsAny<T>(params Type[] any_attributes)
         {
-            Func<CustomAttributeData, bool> predicate = attr => any_attributes.Any(t => attr.AttributeType.Equals(t));
+            Func<CustomAttributeData, bool> predicate = attr => any_attributes.Any(x => attr.AttributeType.Equals(x));
             var fields = typeof(T).GetProperties()
-                .Where(f => f.CustomAttributes.Any(predicate))
-                .Select(f => f.Name);
+                .Where(x => x.CustomAttributes.Any(predicate))
+                .Select(x => x.Name);
             return fields;
         }
 
@@ -743,7 +743,7 @@ namespace KOILib.Common.DataAccess
         protected static IEnumerable<string> GetFields<T>()
         {
             var fields = typeof(T).GetProperties()
-                .Select(f => f.Name);
+                .Select(x => x.Name);
             return fields;
         }
         #endregion
