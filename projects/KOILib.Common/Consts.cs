@@ -14,7 +14,8 @@ namespace KOILib.Common
     public static class Consts
     {
 
-        public static readonly int INSTANCE_HASHCODE_LEN = (System.Environment.Is64BitProcess ? 64 : 32) / 4;
+        //64bitプロセスでもGetHashCode()が返す長さは変わらないので。
+        public static readonly int INSTANCE_HASHCODE_LEN = 32 / 4;//(System.Environment.Is64BitProcess ? 64 : 32) / 4;
 
         public static readonly Encoding SJIS_ENCODING = Encoding.GetEncoding("Shift_JIS");
     }

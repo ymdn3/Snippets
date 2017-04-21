@@ -88,7 +88,6 @@
     <Compile Include="Helpers\BootstrapHelper.cs" />
     <Compile Include="Helpers\BootstrapHelperExtension.cs" />
     <Compile Include="Helpers\HtmlHelperExtension.cs" />
-    <Compile Include="Filters\ParameterFromSessionAttribute.cs" />
     <Compile Include="Models\HtmlFormInput.cs" />
     <Compile Include="Models\IHtmlElement.cs" />
     <Compile Include="Models\IHtmlFormElement.cs" />

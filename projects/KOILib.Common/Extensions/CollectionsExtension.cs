@@ -79,10 +79,18 @@ namespace KOILib.Common.Extensions
                 {
                     object val = prop.GetValue(value);
                     string n = string.IsNullOrEmpty(name) ? prop.Name : name + nameseparator + prop.Name;
-                    if (prop.PropertyType.IsValueType || val.GetType() == typeof(string))
+                    //値がnullか値型か文字列なら上書きで追加
+                    if (val == null || prop.PropertyType.IsValueType || val.GetType() == typeof(string))
+                    {
+                        if (self.ContainsKey(n))
+                            self.Remove(n);
                         self.Add(n, val);
+                    }
                     else
+                    {
+                        //下層へ
                         AddKeyValue(self, n, val, nameseparator);
+                    }
                 }
             }
             else
@@ -119,7 +127,7 @@ namespace KOILib.Common.Extensions
         }
 
         /// <summary>
-        /// 指定した要素をシーケンスの最後に追加します。
+        /// 指定した要素を最後に追加したシーケンスを返します。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>
@@ -131,7 +139,7 @@ namespace KOILib.Common.Extensions
         }
 
         /// <summary>
-        /// 指定した要素をシーケンスの先頭に追加します。
+        /// 指定した要素を先頭に追加したシーケンスを返します。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source"></param>

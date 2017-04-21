@@ -94,6 +94,20 @@ namespace KOILib.Common.Aspmvc
                 }
             }
         }
+        /// <summary>
+        /// 指定のキーを期限切れにします
+        /// </summary>
+        /// <param name="key"></param>
+        protected void Expire(string key)
+        {
+            lock (_ExpireTime)
+            {
+                if (_ExpireTime.ContainsKey(key))
+                {
+                    _ExpireTime.TryUpdate(key, DateTime.MinValue, _ExpireTime[key]);
+                }
+            }
+        }
         #endregion
 
         protected TValue Get<TValue>(string key)

@@ -23,11 +23,12 @@ namespace KOILib.Common.Aspmvc.Helpers
             const string g = "glyphicon";
 
             var tb = new TagBuilder("span");
+            if (htmlAttributes != null)
+                tb.MergeAttributes(Utils.ToFlattenDictionary(htmlAttributes, "-"), true);
+
             tb.AddCssClass(g);
             tb.AddCssClass(classname.StartsWith(g) ? classname
                                                     : g + "-" + classname);
-            if (htmlAttributes != null)
-                tb.MergeAttributes(Utils.ToFlattenDictionary(htmlAttributes, "-"), true);
             return tb;
         }
         /// <summary>
