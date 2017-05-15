@@ -48,5 +48,19 @@ namespace KOILib.Common
                 return ipv4.ToString();
         }
 
+        /// <summary>
+        /// 数値を指定の精度で切り捨てる
+        /// </summary>
+        /// <param name="value">数値</param>
+        /// <param name="digits">切り捨て後に残る桁数</param>
+        /// <returns></returns>
+        public static decimal RoundDown(decimal value, int digits)
+        {
+            var p = Convert.ToDecimal(Math.Pow(10, digits));
+            if (value > 0)
+                return Math.Floor(value * p) / p;
+            else
+                return Math.Ceiling(value * p) / p;
+        }
     }
 }

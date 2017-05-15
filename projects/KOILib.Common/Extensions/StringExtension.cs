@@ -234,13 +234,15 @@ namespace KOILib.Common.Extensions
         }
 
         /// <summary>
-        /// 半角を全角に変換します
+        /// 半角を全角に変換します。
+        /// 「\」→「￥」
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
         public static string ToFullWidth(this string self)
         {
-            return ConvertMap(self, dwMapFlags.LCMAP_FULLWIDTH);
+            return ConvertMap(self, dwMapFlags.LCMAP_FULLWIDTH)
+                .Replace(@"\", "￥");
         }
 
         /// <summary>
