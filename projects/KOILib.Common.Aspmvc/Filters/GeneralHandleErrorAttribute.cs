@@ -11,6 +11,10 @@ namespace KOILib.Common.Aspmvc.Filters
 {
     public class GeneralHandleErrorAttribute : HandleErrorAttribute
     {
+        protected virtual void HandleOnException(ExceptionContext filterContext, bool isAjax)
+        {
+        }
+
         public override void OnException(ExceptionContext filterContext)
         {
             if (filterContext == null)
@@ -30,43 +34,28 @@ namespace KOILib.Common.Aspmvc.Filters
             //HttpAntiForgeryException の場合はHTTP401を返す
             if (ex is HttpAntiForgeryException)
             {
-                filterContext.ExceptionHandled = true;
                 filterContext.HttpContext.Response.Clear();
                 filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 filterContext.HttpContext.Response.TrySkipIisCustomErrors = true;
+                filterContext.ExceptionHandled = true;
             }
 
             if (filterContext.HttpContext.Request.IsAjaxRequest())
             {
-                //Application_Errorは呼ばれない
-                HandleAjaxRequestException(filterContext);
+                //HTTP401はハンドル済み
+                if (filterContext.HttpContext.Response.StatusCode != (int)HttpStatusCode.Unauthorized)
+                {
+                    HandleOnException(filterContext, true);
+                }
             }
             else
             {
+                HandleOnException(filterContext, false);
+
                 //カスタムエラーが有効でなければbase.OnException()でもExceptionHandledがtrueにならないので
                 //Application_Errorも呼ばれる
                 base.OnException(filterContext);
             }
-        }
-
-        private void HandleAjaxRequestException(ExceptionContext filterContext)
-        {
-            if (filterContext.ExceptionHandled)
-                return;
-
-            filterContext.Result = new JsonResult()
-            {
-                Data = new
-                {
-                    caption = filterContext.Exception.Message,
-                    message = filterContext.Exception.ToString(),
-                },
-                JsonRequestBehavior = JsonRequestBehavior.AllowGet
-            };
-            filterContext.ExceptionHandled = true;
-            filterContext.HttpContext.Response.Clear();
-            filterContext.HttpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            filterContext.HttpContext.Response.TrySkipIisCustomErrors = true;
         }
     }
 }
