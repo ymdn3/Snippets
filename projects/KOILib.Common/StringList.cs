@@ -279,6 +279,14 @@ namespace KOILib.Common
             else
                 return sb.ToString();
         }
+        /// <summary>
+        /// 引数なし ToString(params object[] args)
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return this.ToString();
+        }
         #endregion
 
         #region Constructors

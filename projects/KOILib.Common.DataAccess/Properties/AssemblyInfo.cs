@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("KOILib.Common.DataAccess")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("KOUSHI INTEC Inc.")]
 [assembly: AssemblyProduct("KOILib.Common.DataAccess")]
-[assembly: AssemblyCopyright("Copyright © https://github.com/ymdn3")]
+[assembly: AssemblyCopyright("Copyright © KOUSHI INTEC Inc. 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

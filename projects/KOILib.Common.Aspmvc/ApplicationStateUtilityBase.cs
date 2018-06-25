@@ -25,17 +25,20 @@ namespace KOILib.Common.Aspmvc
         #endregion
 
         #region 有効期限管理
-        protected static readonly string _KeyOfExpireTime = "##EXPIRE_TIME##";
+        private static readonly string _keyOfExpireTime = "##EXPIRE_TIME##";
         protected TimeSpan Lifetime { get; set; }
-        protected ConcurrentDictionary<string, DateTime> _ExpireTime
+        private ConcurrentDictionary<string, DateTime> _expireTime
         {
             get
             {
-                if (_httpApplication[_KeyOfExpireTime] != null)
-                    return (ConcurrentDictionary<string, DateTime>)_httpApplication[_KeyOfExpireTime];
+                using (this.Lock())
+                {
+                    if (_httpApplication[_keyOfExpireTime] != null)
+                        return (ConcurrentDictionary<string, DateTime>)_httpApplication[_keyOfExpireTime];
 
-                _httpApplication[_KeyOfExpireTime] = new ConcurrentDictionary<string, DateTime>();
-                return _ExpireTime;
+                    _httpApplication[_keyOfExpireTime] = new ConcurrentDictionary<string, DateTime>();
+                    return _expireTime;
+                }
             }
         }
         /// <summary>
@@ -43,13 +46,12 @@ namespace KOILib.Common.Aspmvc
         /// </summary>
         protected void SweepExpired()
         {
-            lock (_ExpireTime)
-            {
-                var utcReferenceTime = DateTime.UtcNow;
-                _ExpireTime
-                    .Where(x => x.Value < utcReferenceTime)
-                    .Each(x => Remove(x.Key));
-            }
+            var utcReferenceTime = DateTime.UtcNow;
+            var expires = _expireTime
+                .Where(x => x.Value < utcReferenceTime)
+                .ToArray();
+            expires
+                .Each(x => Remove(x.Key));
         }
         /// <summary>
         /// 指定のキーが期限切れかどうかを判断します
@@ -58,14 +60,12 @@ namespace KOILib.Common.Aspmvc
         /// <returns></returns>
         protected bool IsExpired(string key)
         {
-            lock (_ExpireTime)
-            {
-                var utcReferenceTime = DateTime.UtcNow;
-                if (_ExpireTime.ContainsKey(key))
-                    if (_ExpireTime[key] < utcReferenceTime)
-                        return true;
-                return false;
-            }
+            var utcReferenceTime = DateTime.UtcNow;
+            var utcExpireTime = DateTime.UtcNow;
+            if (_expireTime.TryGetValue(key, out utcExpireTime))
+                if (utcExpireTime < utcReferenceTime)
+                    return true;
+            return false;
         }
         /// <summary>
         /// 指定のキー値に所定の有効期限を設定します
@@ -73,11 +73,8 @@ namespace KOILib.Common.Aspmvc
         /// <param name="key"></param>
         protected void SetExpire(string key)
         {
-            lock (_ExpireTime)
-            {
-                var expire = DateTime.UtcNow.Add(Lifetime);
-                _ExpireTime.AddOrUpdate(key, expire, (k, v) => expire);
-            }
+            var expire = DateTime.UtcNow.Add(Lifetime);
+            _expireTime.AddOrUpdate(key, expire, (k, v) => expire);
         }
         /// <summary>
         /// 指定のキー値が有効期限管理されている場合に、有効期限をリセットします
@@ -85,14 +82,9 @@ namespace KOILib.Common.Aspmvc
         /// <param name="key"></param>
         protected void ResetExpire(string key)
         {
-            lock (_ExpireTime)
-            {
-                if (_ExpireTime.ContainsKey(key))
-                {
-                    var expire = DateTime.UtcNow.Add(Lifetime);
-                    _ExpireTime.TryUpdate(key, expire, _ExpireTime[key]);
-                }
-            }
+            var current = DateTime.MinValue;
+            if (_expireTime.TryGetValue(key, out current))
+                SetExpire(key);
         }
         /// <summary>
         /// 指定のキーを期限切れにします
@@ -100,13 +92,9 @@ namespace KOILib.Common.Aspmvc
         /// <param name="key"></param>
         protected void Expire(string key)
         {
-            lock (_ExpireTime)
-            {
-                if (_ExpireTime.ContainsKey(key))
-                {
-                    _ExpireTime.TryUpdate(key, DateTime.MinValue, _ExpireTime[key]);
-                }
-            }
+            var current = DateTime.MinValue;
+            if (_expireTime.TryGetValue(key, out current))
+                _expireTime.TryUpdate(key, DateTime.MinValue, current);
         }
         #endregion
 
@@ -135,7 +123,7 @@ namespace KOILib.Common.Aspmvc
         /// <param name="noExpire">trueのとき無期限、falseのとき有効期限ありで、値がセットされた場合のみ有効期限をリセットします</param>
         public void Set<TValue>(string key, TValue value, bool noExpire)
         {
-            lock (_httpApplication)
+            using (this.Lock())
             {
                 _httpApplication.Remove(key);
                 _httpApplication[key] = value;
@@ -147,12 +135,12 @@ namespace KOILib.Common.Aspmvc
 
         public void Remove(string key)
         {
-            lock (_httpApplication)
+            using (this.Lock())
             {
                 _httpApplication.Remove(key);
 
                 var t = DateTime.Now;
-                _ExpireTime.TryRemove(key, out t);
+                _expireTime.TryRemove(key, out t);
             }
         }
 

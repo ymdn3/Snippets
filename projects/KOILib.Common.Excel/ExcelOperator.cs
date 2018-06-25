@@ -81,18 +81,19 @@ namespace KOILib.Common.Excel
         public HashSet<ExcelCell> GetNamedRangeCells(string sheetname, string namedRange)
         {
             var cellSet = new HashSet<ExcelCell>();
-            using (var r = new ComReleaser())
+
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var ranges = GetNamedRanges(sheet, namedRange);
+            foreach (Range range in ranges)
             {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var ranges = GetNamedRanges(sheet, namedRange);
-                foreach (Range range in ranges)
-                {
-                    foreach (ExcelCell cell in ExcelCell.FromRange(range))
-                        cellSet.Add(cell);
-                    r.Push(range);
-                }
+                foreach (ExcelCell cell in ExcelCell.FromRange(range))
+                    cellSet.Add(cell);
+
+                _ComObjects.Push(range);
             }
+
             return cellSet;
         }
 
@@ -104,16 +105,16 @@ namespace KOILib.Common.Excel
         public HashSet<ExcelCell> GetNamedRangeCells(string namedRange)
         {
             var cellSet = new HashSet<ExcelCell>();
-            using (var r = new ComReleaser())
+
+            var ranges = GetNamedRanges(namedRange);
+            foreach (Range range in ranges)
             {
-                var ranges = GetNamedRanges(namedRange);
-                foreach (Range range in ranges)
-                {
-                    foreach (ExcelCell cell in ExcelCell.FromRange(range))
-                        cellSet.Add(cell);
-                    r.Push(range);
-                }
+                foreach (ExcelCell cell in ExcelCell.FromRange(range))
+                    cellSet.Add(cell);
+
+                _ComObjects.Push(range);
             }
+
             return cellSet;
         }
 
@@ -127,17 +128,18 @@ namespace KOILib.Common.Excel
         public dynamic GetValueObject(string sheetname, int rownum, int colnum)
         {
             object v = null;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
-                var cell = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
-                r.Push(cell);
 
-                v = cell.Value;
-            }
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var cell = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
+            _ComObjects.Push(cell);
+
+            v = cell.Value;
+
             return v;
         }
 
@@ -162,13 +164,12 @@ namespace KOILib.Common.Excel
         public string GetSheetName(int sheetindex)
         {
             var name = "";
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetindex);
-                r.Push(sheet);
 
-                name = sheet.Name;
-            }
+            var sheet = GetSheet(sheetindex);
+            _ComObjects.Push(sheet);
+
+            name = sheet.Name;
+
             return name;
         }
 
@@ -180,13 +181,13 @@ namespace KOILib.Common.Excel
         public bool HasSheet(string sheetname)
         {
             var founds = false;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                founds = (sheet != null);
 
-                if (founds) r.Push(sheet);
-            }
+            var sheet = GetSheet(sheetname);
+            if (sheet != null)
+                _ComObjects.Push(sheet);
+
+            founds = (sheet != null);
+
             return founds;
         }
 
@@ -198,17 +199,18 @@ namespace KOILib.Common.Excel
         public int GetLastRownum(string sheetname)
         {
             var rownum = 0;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
-                var lastcell = cells.SpecialCells(XlCellType.xlCellTypeLastCell);
-                r.Push(lastcell);
 
-                rownum = lastcell.Row;
-            }
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var lastcell = cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+            _ComObjects.Push(lastcell);
+
+            rownum = lastcell.Row;
+
             return rownum;
         }
 
@@ -220,17 +222,18 @@ namespace KOILib.Common.Excel
         public int GetLastColnum(string sheetname)
         {
             var colnum = 0;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
-                var lastcell = cells.SpecialCells(XlCellType.xlCellTypeLastCell);
-                r.Push(lastcell);
 
-                colnum = lastcell.Column;
-            }
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var lastcell = cells.SpecialCells(XlCellType.xlCellTypeLastCell);
+            _ComObjects.Push(lastcell);
+
+            colnum = lastcell.Column;
+
             return colnum;
         }
 
@@ -243,15 +246,17 @@ namespace KOILib.Common.Excel
         public bool HasNamedRange(string sheetname, string namedRange)
         {
             var founds = false;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                //存在するかどうかのみを知るため、1個に限って取得
-                var ranges = GetNamedRanges(sheet, namedRange, 1);
-                founds = (ranges.Count > 0);
-                foreach (var range in ranges) r.Push(range);
-            }
+
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            //存在するかどうかのみを知るため、1個に限って取得
+            var ranges = GetNamedRanges(sheet, namedRange, 1);
+            foreach (var range in ranges)
+                _ComObjects.Push(range);
+
+            founds = (ranges.Count > 0);
+
             return founds;
         }
 
@@ -263,16 +268,38 @@ namespace KOILib.Common.Excel
         public bool HasNamedRange(string namedRange)
         {
             var founds = false;
-            using (var r = new ComReleaser())
-            {
-                //存在するかどうかのみを知るため、1個に限って取得
-                var ranges = GetNamedRanges(namedRange, 1);
-                founds = (ranges.Count > 0);
-                foreach (var range in ranges) r.Push(range);
-            }
+
+            //存在するかどうかのみを知るため、1個に限って取得
+            var ranges = GetNamedRanges(namedRange, 1);
+            foreach (var range in ranges)
+                _ComObjects.Push(range);
+
+            founds = (ranges.Count > 0);
+
             return founds;
         }
 
+        /// <summary>
+        /// 指定のシートに、指定の図形オブジェクトが存在するかを取得します。
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="shapename"></param>
+        /// <returns></returns>
+        public bool HasShape(string sheetname, string shapename)
+        {
+            var founds = false;
+
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var shape = GetShape(sheet, shapename);
+            if (shape != null)
+                _ComObjects.Push(shape);
+
+            founds = (shape != null);
+
+            return founds;
+        }
         #endregion
 
         #region セル値設定
@@ -287,19 +314,20 @@ namespace KOILib.Common.Excel
         /// <param name="colnum">貼り付け開始セルの列番号</param>
         public void SetValue<T>(TableArray<T> value, string sheetname, int rownum, int colnum)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
-                var from = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
-                r.Push(from);
-                var to = from.Resize[RowSize: value.RowCount, ColumnSize: value.ColumnCount];
-                r.Push(to);
 
-                to.Value = value.Array;
-            }
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var from = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
+            _ComObjects.Push(from);
+
+            var to = from.Resize[RowSize: value.RowCount, ColumnSize: value.ColumnCount];
+            _ComObjects.Push(to);
+
+            to.Value = value.Array;
         }
 
         /// <summary>
@@ -311,17 +339,16 @@ namespace KOILib.Common.Excel
         /// <param name="colnum">列番号</param>
         public void SetValue(object value, string sheetname, int rownum, int colnum)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
-                var from = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
-                r.Push(from);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                from.Value = value;
-            }
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var from = (Range)cells[RowIndex: rownum, ColumnIndex: colnum];
+            _ComObjects.Push(from);
+
+            from.Value = value;
         }
 
         /// <summary>
@@ -332,17 +359,80 @@ namespace KOILib.Common.Excel
         /// <param name="namedRange">Excelでシート定義された名前</param>
         public void SetValue(object value, string sheetname, string namedRange)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Range[namedRange];
-                r.Push(cells);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                if (value is string)
-                    cells.NumberFormatLocal = "@";
-                cells.Value = value;
-            }
+            var cells = sheet.Range[namedRange];
+            _ComObjects.Push(cells);
+
+            if (value is string)
+                cells.NumberFormatLocal = "@";
+
+            cells.Value = value;
+        }
+        #endregion
+
+        #region 図形データ操作
+        /// <summary>
+        /// 指定したシートの、指定した図形オブジェクトのテキストを取得します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="shapename"></param>
+        /// <returns></returns>
+        [Obsolete("needs assembly [office, Version15]")]
+        public string GetTextFromShape(string sheetname, string shapename)
+        {
+#if true
+            throw new NotSupportedException("needs assembly [office, Version15].");
+#else
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var shape = GetShape(sheet, shapename);
+            if (shape == null)
+                return null;
+
+            _ComObjects.Push(shape);
+
+            TextFrame2 textframe = shape.TextFrame2;
+            _ComObjects.Push(textframe);
+
+            TextRange2 textrange = textframe.TextRange;
+            _ComObjects.Push(textrange);
+
+            return textrange.Text;
+#endif
+        }
+
+        /// <summary>
+        /// 指定したシートの、指定した図形オブジェクトにテキストを設定します
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="sheetname"></param>
+        /// <param name="shapename"></param>
+        [Obsolete("needs assembly [office, Version15]")]
+        public void SetTextToShape(object value, string sheetname, string shapename)
+        {
+#if true
+            throw new NotSupportedException("needs assembly [office, Version15].");
+#else
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var shape = GetShape(sheet, shapename);
+            if (shape == null)
+                return;
+
+            _ComObjects.Push(shape);
+
+            TextFrame2 textframe = shape.TextFrame2;
+            _ComObjects.Push(textframe);
+
+            TextRange2 textrange = textframe.TextRange;
+            _ComObjects.Push(textrange);
+
+            textrange.Text = value;
+#endif
         }
         #endregion
 
@@ -355,15 +445,13 @@ namespace KOILib.Common.Excel
         /// <param name="count">挿入する行数</param>
         public void InsertRow(string sheetname, int rownum, int count)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var row = GetRow(sheet, rownum, count);
-                r.Push(row);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                row.Insert(XlInsertShiftDirection.xlShiftDown);
-            }
+            var row = GetRow(sheet, rownum, count);
+            _ComObjects.Push(row);
+
+            row.Insert(XlInsertShiftDirection.xlShiftDown);
         }
 
         /// <summary>
@@ -374,42 +462,66 @@ namespace KOILib.Common.Excel
         /// <param name="count">挿入する列数</param>
         public void InsertColumn(string sheetname, int colnum, int count)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var col = GetColumn(sheet, colnum, count);
-                r.Push(col);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                col.Insert(XlInsertShiftDirection.xlShiftToRight);
-            }
+            var col = GetColumn(sheet, colnum, count);
+            _ComObjects.Push(col);
+
+            col.Insert(XlInsertShiftDirection.xlShiftToRight);
         }
 
         /// <summary>
-        /// 指定行をコピーし、指定行の次の行から挿入します
+        /// 指定の1行をコピーし、指定行の次の行から挿入します
         /// </summary>
         /// <param name="sheetname">シート名</param>
         /// <param name="rownum">行番号</param>
-        /// <param name="count">挿入する行数</param>
+        /// <param name="count">コピー挿入する行数</param>
         public void CopyRow(string sheetname, int rownum, int count)
         {
             if (count <= 0) return;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
 
-                var srcAddr = string.Format("{0}:{0}", rownum);
-                var src = sheet.Range[srcAddr];
-                r.Push(src);
-                src.Copy();
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                var destAddr = string.Format("{0}:{1}", rownum + 1, rownum + count);
-                var dest = sheet.Range[destAddr];
-                r.Push(dest);
+            var srcAddr = string.Format("{0}:{0}", rownum);
+            var src = sheet.Range[srcAddr];
+            _ComObjects.Push(src);
 
-                dest.Insert();
-            }
+            src.Copy();
+
+            var destAddr = string.Format("{0}:{1}", rownum + 1, rownum + count);
+            var dest = sheet.Range[destAddr];
+            _ComObjects.Push(dest);
+
+            dest.Insert();
+        }
+
+        /// <summary>
+        /// 指定した行から連続する複数行を、指定行へ挿入します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="fromRownum"></param>
+        /// <param name="count"></param>
+        /// <param name="toRownum"></param>
+        public void CopyRow(string sheetname, int fromRownum, int count, int toRownum)
+        {
+            if (count <= 0) return;
+
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var srcAddr = string.Format("{0}:{1}", fromRownum, fromRownum + count - 1);
+            var src = sheet.Range[srcAddr];
+            _ComObjects.Push(src);
+
+            src.Copy();
+
+            var destAddr = string.Format("{0}:{1}", toRownum, toRownum + count - 1);
+            var dest = sheet.Range[destAddr];
+            _ComObjects.Push(dest);
+
+            dest.Insert(XlInsertShiftDirection.xlShiftDown);
         }
 
         /// <summary>
@@ -421,17 +533,124 @@ namespace KOILib.Common.Excel
         public void DeleteRow(string sheetname, int rownum, int count)
         {
             if (count <= 0) return;
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var row = GetRow(sheet, rownum, count);
-                r.Push(row);
 
-                row.Delete(XlDeleteShiftDirection.xlShiftUp);
-            }
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var row = GetRow(sheet, rownum, count);
+            _ComObjects.Push(row);
+
+            row.Delete(XlDeleteShiftDirection.xlShiftUp);
         }
 
+        /// <summary>
+        /// 指定列より、指定数の列を削除します
+        /// </summary>
+        /// <param name="sheetname">シート名</param>
+        /// <param name="colnum">列番号</param>
+        /// <param name="count">削除する列数</param>
+        public void DeleteColumn(string sheetname, int colnum, int count)
+        {
+            if (count <= 0) return;
+
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var col = GetColumn(sheet, colnum, count);
+            _ComObjects.Push(col);
+
+            col.Delete(XlDeleteShiftDirection.xlShiftToLeft);
+        }
+
+        /// <summary>
+        /// 指定行の高さを自動調整します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="rownum"></param>
+        public void AutoFitRow(string sheetname, int rownum)
+        {
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var row = GetRow(sheet, rownum, 1);
+            _ComObjects.Push(row);
+
+            row.AutoFit();
+        }
+
+        /// <summary>
+        /// 指定列の幅を自動調整します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="colnum"></param>
+        public void AutoFitColumn(string sheetname, int colnum)
+        {
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var col = GetColumn(sheet, colnum, 1);
+            _ComObjects.Push(col);
+
+            col.AutoFit();
+        }
+        #endregion
+
+        #region セル操作
+        /// <summary>
+        /// 指定範囲のセルを結合します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="topRownum"></param>
+        /// <param name="bottomRownum"></param>
+        /// <param name="leftColnum"></param>
+        /// <param name="rightColnum"></param>
+        public void MergeCell(string sheetname, int topRownum, int bottomRownum, int leftColnum, int rightColnum)
+        {
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var cell1 = cells[RowIndex:topRownum, ColumnIndex:leftColnum];
+            _ComObjects.Push(cell1);
+
+            var cell2 = cells[RowIndex:bottomRownum, ColumnIndex:rightColnum];
+            _ComObjects.Push(cell2);
+                
+            var range = cells.Range[Cell1:cell1, Cell2:cell2];
+            _ComObjects.Push(range);
+
+            range.Merge();
+        }
+
+        /// <summary>
+        /// 指定範囲のセルの結合を解除します
+        /// </summary>
+        /// <param name="sheetname"></param>
+        /// <param name="topRownum"></param>
+        /// <param name="bottomRownum"></param>
+        /// <param name="leftColnum"></param>
+        /// <param name="rightColnum"></param>
+        public void UnMergeCell(string sheetname, int topRownum, int bottomRownum, int leftColnum, int rightColnum)
+        {
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
+
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            var cell1 = cells[RowIndex: topRownum, ColumnIndex: leftColnum];
+            _ComObjects.Push(cell1);
+
+            var cell2 = cells[RowIndex: bottomRownum, ColumnIndex: rightColnum];
+            _ComObjects.Push(cell2);
+
+            var range = cells.Range[Cell1: cell1, Cell2: cell2];
+            _ComObjects.Push(range);
+
+            range.UnMerge();
+        }
         #endregion
 
         #region 改ページ指定
@@ -442,17 +661,16 @@ namespace KOILib.Common.Excel
         /// <param name="rownum">行番号</param>
         public void InsertHPageBreak(string sheetname, int rownum)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var pgbrk = sheet.HPageBreaks;
-                r.Push(pgbrk);
-                var row = GetRow(sheet, rownum, 1);
-                r.Push(row);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                pgbrk.Add(row);
-            }
+            var pgbrk = sheet.HPageBreaks;
+            _ComObjects.Push(pgbrk);
+
+            var row = GetRow(sheet, rownum, 1);
+            _ComObjects.Push(row);
+
+            pgbrk.Add(row);
         }
 
         /// <summary>
@@ -462,34 +680,30 @@ namespace KOILib.Common.Excel
         /// <param name="colnum">列番号</param>
         public void InsertVPageBreak(string sheetname, int colnum)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var pgbrk = sheet.VPageBreaks;
-                r.Push(pgbrk);
-                var col = GetColumn(sheet, colnum, 1);
-                r.Push(col);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                pgbrk.Add(col);
-            }
+            var pgbrk = sheet.VPageBreaks;
+            _ComObjects.Push(pgbrk);
+
+            var col = GetColumn(sheet, colnum, 1);
+            _ComObjects.Push(col);
+
+            pgbrk.Add(col);
         }
-        #endregion
+#endregion
 
-        #region シート操作
+#region シート操作
         /// <summary>
         /// シートのアクティブ化
         /// </summary>
         /// <param name="sheetname">対象のシート名</param>
         public void ActivateSheetTo(string sheetname)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                sheet.Activate();
-            }
+            sheet.Activate();
         }
         
         /// <summary>
@@ -498,15 +712,13 @@ namespace KOILib.Common.Excel
         /// <param name="sheetname">シート名</param>
         public void ClearSheet(string sheetname)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
-                var cells = sheet.Cells;
-                r.Push(cells);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                cells.Clear();
-            }
+            var cells = sheet.Cells;
+            _ComObjects.Push(cells);
+
+            cells.Clear();
         }
 
         /// <summary>
@@ -517,21 +729,39 @@ namespace KOILib.Common.Excel
         /// <param name="toAfter"><c>True</c>のとき、コピー元シートの右側、<c>False</c>のとき、コピー元シートの左側に新たなシートを作成します。</param>
         public void CopySheet(string srcSheetname, string newSheetname, bool toAfter)
         {
-            using (var r = new ComReleaser())
-            {
-                var srcsheet = GetSheet(srcSheetname);
-                r.Push(srcsheet);
+            var srcsheet = GetSheet(srcSheetname);
+            _ComObjects.Push(srcsheet);
 
-                if (toAfter)
-                    srcsheet.Copy(After: srcsheet);
-                else
-                    srcsheet.Copy(Before: srcsheet);
+            if (toAfter)
+                srcsheet.Copy(After: srcsheet);
+            else
+                srcsheet.Copy(Before: srcsheet);
 
-                //Copy後、生成されたシートはアクティブシートとなっている
-                var newsheet = (Worksheet)Workbook.ActiveSheet;
-                r.Push(newsheet);
-                newsheet.Name = newSheetname;
-            }
+            //Copy後、生成されたシートはアクティブシートとなっている
+            var newsheet = (Worksheet)Workbook.ActiveSheet;
+            _ComObjects.Push(newsheet);
+
+            newsheet.Name = newSheetname;
+        }
+
+        /// <summary>
+        /// シート移動
+        /// </summary>
+        /// <param name="srcSheetname">移動対象のシート名</param>
+        /// <param name="baseSheetname">移動先基準のシート名</param>
+        /// <param name="toAfter"><c>True</c>のとき、基準シートの右側、<c>False</c>のとき、基準シートの左側にシートを移動します。</param>
+        public void MoveSheet(string srcSheetname, string baseSheetname, bool toAfter)
+        {
+            var srcsheet = GetSheet(srcSheetname);
+            _ComObjects.Push(srcsheet);
+
+            var basesheet = GetSheet(baseSheetname);
+            _ComObjects.Push(basesheet);
+
+            if (toAfter)
+                srcsheet.Move(After: basesheet);
+            else
+                srcsheet.Move(Before: basesheet);
         }
 
         /// <summary>
@@ -540,17 +770,14 @@ namespace KOILib.Common.Excel
         /// <param name="sheetname">シート名</param>
         public void DeleteSheet(string sheetname)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                sheet.Delete();
-            }
+            sheet.Delete();
         }
-        #endregion
+#endregion
 
-        #region ブック保存
+#region ブック保存
         /// <summary>
         /// ブック保存
         /// </summary>
@@ -571,6 +798,30 @@ namespace KOILib.Common.Excel
         }
         #endregion
 
+        #region ブック出力
+        /// <summary>
+        /// ブックをPDF形式で出力します
+        /// </summary>
+        /// <param name="filepath">出力先パス。拡張子は「.pdf」に変更します。</param>
+        public void ExportPDF(string filepath)
+        {
+            var sheets = Workbook.Worksheets;
+            _ComObjects.Push(sheets);
+
+            //複数シートがある場合は、全て選択する
+            if (sheets.Count > 1)
+                sheets.Select();
+
+            //拡張子が".pdf"でない場合に".pdf"が付加されてしまうため、あらかじめ拡張子を変更する
+            var file = System.IO.Path.ChangeExtension(filepath, ".pdf");
+            System.IO.File.Delete(file);
+
+            var type = XlFixedFormatType.xlTypePDF;
+            var quarity = XlFixedFormatQuality.xlQualityStandard;
+            Workbook.ExportAsFixedFormat(Type: type, Filename: filepath, Quality: quarity, IncludeDocProperties: true, IgnorePrintAreas: false, OpenAfterPublish: false);
+        }
+        #endregion
+
         #region ブック・シート印刷
         /// <summary>
         /// ワークシート印刷
@@ -582,25 +833,22 @@ namespace KOILib.Common.Excel
         /// <param name="printerName">プリンター名（System.Drawing.Printing.PrinterSettings.InstalledPrinters から取得できるものを設定することを推奨）。省略可能。</param>
         public void PrintOut(string sheetname, int pageFrom = 1, int pageTo = 0, int copies = 1, string printerName = null)
         {
-            using (var r = new ComReleaser())
-            {
-                var sheet = GetSheet(sheetname);
-                r.Push(sheet);
+            var sheet = GetSheet(sheetname);
+            _ComObjects.Push(sheet);
 
-                if (string.IsNullOrEmpty(printerName))
-                {
-                    if (pageTo > 0)
-                        sheet.PrintOutEx(From: pageFrom, To: pageTo, Copies: copies);
-                    else
-                        sheet.PrintOutEx(From: pageFrom, Copies: copies);
-                }
+            if (string.IsNullOrEmpty(printerName))
+            {
+                if (pageTo > 0)
+                    sheet.PrintOutEx(From: pageFrom, To: pageTo, Copies: copies);
                 else
-                {
-                    if (pageTo > 0)
-                        sheet.PrintOutEx(From: pageFrom, To: pageTo, Copies: copies, ActivePrinter: printerName);
-                    else
-                        sheet.PrintOutEx(From: pageFrom, Copies: copies, ActivePrinter: printerName);
-                }
+                    sheet.PrintOutEx(From: pageFrom, Copies: copies);
+            }
+            else
+            {
+                if (pageTo > 0)
+                    sheet.PrintOutEx(From: pageFrom, To: pageTo, Copies: copies, ActivePrinter: printerName);
+                else
+                    sheet.PrintOutEx(From: pageFrom, Copies: copies, ActivePrinter: printerName);
             }
         }
 
@@ -628,9 +876,9 @@ namespace KOILib.Common.Excel
                     Workbook.PrintOutEx(From: pageFrom, Copies: copies, ActivePrinter: printerName);
             }
         }
-        #endregion
+#endregion
 
-        #region 非公開
+#region 非公開
         /// <summary>
         /// 指定の名前のシートオブジェクトを取得します。
         /// </summary>
@@ -638,23 +886,18 @@ namespace KOILib.Common.Excel
         /// <returns></returns>
         protected internal Worksheet GetSheet(string sheetname)
         {
-            Worksheet sheet = null;
-            using (var r = new ComReleaser())
-            {
-                var sheets = Workbook.Worksheets;
-                r.Push(sheets);
+            var sheets = Workbook.Worksheets;
+            _ComObjects.Push(sheets);
 
-                foreach (Worksheet s in sheets)
-                {
-                    if (s.Name == sheetname)
-                    {
-                        sheet = s;
-                        break;
-                    }
-                    r.Push(s);
-                }
+            foreach (Worksheet s in sheets)
+            {
+                if (s.Name == sheetname)
+                    return s;
+
+                _ComObjects.Push(s);
             }
-            return sheet;
+
+            return null;
         }
 
         /// <summary>
@@ -665,20 +908,18 @@ namespace KOILib.Common.Excel
         protected internal Worksheet GetSheet(int sheetindex)
         {
             Worksheet sheet = null;
-            using (var r = new ComReleaser())
-            {
-                var sheets = Workbook.Worksheets;
-                r.Push(sheets);
 
-                if (sheetindex <= 0 || sheets.Count < sheetindex)
-                {
-                    //out of range.
-                    sheet = Workbook.ActiveSheet;
-                }
-                else
-                {
-                    sheet = sheets.Item[sheetindex];
-                }
+            var sheets = Workbook.Worksheets;
+            _ComObjects.Push(sheets);
+
+            if (sheetindex <= 0 || sheets.Count < sheetindex)
+            {
+                //out of range.
+                sheet = Workbook.ActiveSheet;
+            }
+            else
+            {
+                sheet = sheets.Item[sheetindex];
             }
             return sheet;
         }
@@ -693,15 +934,15 @@ namespace KOILib.Common.Excel
         protected internal Range GetRow(Worksheet sheet, int rownum, int count)
         {
             Range range = null;
-            using (var r = new ComReleaser())
-            {
-                var rows = sheet.Rows;
-                r.Push(rows);
-                var startRow = (Range)rows[rownum];
-                r.Push(startRow);
 
-                range = startRow.Resize[RowSize: count];
-            }
+            var rows = sheet.Rows;
+            _ComObjects.Push(rows);
+
+            var startRow = (Range)rows[rownum];
+            _ComObjects.Push(startRow);
+
+            range = startRow.Resize[RowSize: count];
+
             return range;
         }
 
@@ -715,15 +956,15 @@ namespace KOILib.Common.Excel
         protected internal Range GetColumn(Worksheet sheet, int colnum, int count)
         {
             Range range = null;
-            using (var r = new ComReleaser())
-            {
-                var cols = sheet.Columns;
-                r.Push(cols);
-                var startCol = (Range)cols[colnum];
-                r.Push(startCol);
 
-                range = startCol.Resize[ColumnSize: count];
-            }
+            var cols = sheet.Columns;
+            _ComObjects.Push(cols);
+
+            var startCol = (Range)cols[colnum];
+            _ComObjects.Push(startCol);
+
+            range = startCol.Resize[ColumnSize: count];
+
             return range;
         }
 
@@ -738,21 +979,20 @@ namespace KOILib.Common.Excel
         {
             var ranges = new HashSet<Range>();
             if (limitcount == 0) return ranges;
-            using (var r = new ComReleaser())
-            {
-                var names = sheet.Names;
-                r.Push(names);
 
-                foreach (Name n in names)
+            var names = sheet.Names;
+            _ComObjects.Push(names);
+
+            foreach (Name n in names)
+            {
+                _ComObjects.Push(n);
+                if (n.Name == namedRange)
                 {
-                    r.Push(n);
-                    if (n.Name == namedRange)
-                    {
-                        ranges.Add(n.RefersToRange);
-                        if (ranges.Count == limitcount) break;
-                    }
+                    ranges.Add(n.RefersToRange);
+                    if (ranges.Count == limitcount) break;
                 }
             }
+
             return ranges;
         }
 
@@ -766,27 +1006,49 @@ namespace KOILib.Common.Excel
         {
             var ranges = new HashSet<Range>();
             if (limitcount == 0) return ranges;
-            using (var r = new ComReleaser())
+
+            var names = Workbook.Names;
+            _ComObjects.Push(names);
+
+            foreach (Name n in names)
             {
-                var names = Workbook.Names;
-                r.Push(names);
-                foreach (Name n in names)
+                _ComObjects.Push(n);
+                if (n.Name == namedRange)
                 {
-                    r.Push(n);
-                    if (n.Name == namedRange)
-                    {
-                        ranges.Add(n.RefersToRange);
-                        if (ranges.Count == limitcount) break;
-                    }
+                    ranges.Add(n.RefersToRange);
+                    if (ranges.Count == limitcount) break;
                 }
             }
+        
             return ranges;
         }
-        #endregion
 
-        #endregion
+        /// <summary>
+        /// 指定の名前の図形オブジェクトを取得します
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="shapename"></param>
+        /// <returns></returns>
+        protected internal Shape GetShape(Worksheet sheet, string shapename)
+        {
+            var shapes = sheet.Shapes;
+            _ComObjects.Push(shapes);
 
-        #region Constructors
+            foreach (Shape shape in shapes)
+            {
+                if (shape.Name == shapename)
+                    return shape;
+
+                _ComObjects.Push(shape);
+            }
+
+            return null;
+        }
+#endregion
+
+#endregion
+
+#region Constructors
         /// <summary>
         /// Excelファイルを指定して、このクラスのインスタンスを生成します。
         /// </summary>
@@ -834,9 +1096,9 @@ namespace KOILib.Common.Excel
             //このブックの初期状態を保存済み扱いとする
             Workbook.Saved = true;
         }
-        #endregion
+#endregion
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // 重複する呼び出しを検出するには
 
         protected virtual void Dispose(bool disposing)
@@ -851,7 +1113,8 @@ namespace KOILib.Common.Excel
                 // アンマネージ リソース (アンマネージ オブジェクト) を解放し、下のファイナライザーをオーバーライドします。
 
                 //ダイアログなし終了のためにブックの初期状態を保存済み扱いとする
-                if (Workbook != null) Workbook.Saved = true;
+                if (Workbook != null)
+                    Workbook.Saved = true;
 
                 // 大きなフィールドを null に設定します。
                 _ComObjects.Dispose();
@@ -876,7 +1139,7 @@ namespace KOILib.Common.Excel
             // 上のファイナライザーがオーバーライドされる場合は、次の行のコメントを解除してください。
             // GC.SuppressFinalize(this);
         }
-        #endregion
+#endregion
 
     }//end class
 }//end namespace

@@ -16,10 +16,16 @@ namespace KOILib.Common.Log4
     {
         #region Static Members
         /// <summary>
-        /// ログ出力ファイルパスを設定する環境変数名。
+        /// ログ出力ディレクトリパスを設定する環境変数名。
         /// log4net設定ファイル・出力ファイルパスにて、${LOG4NET_LOGFILE_PATH} と記述すると、この環境変数の値を参照することができる。
         /// </summary>
         protected static string LOG4NET_LOGFILE_PATH = "LOG4NET_LOGFILE_PATH";
+
+        /// <summary>
+        /// ログ出力ファイル名を設定する環境変数名。
+        /// log4net設定ファイル・出力ファイルパスにて、${LOG4NET_LOGFILE_NAME} と記述すると、この環境変数の値を参照することができる。
+        /// </summary>
+        protected static string LOG4NET_LOGFILE_NAME = "LOG4NET_LOGFILE_NAME";
 
         /// <summary>
         /// log4netを指定のファイルで初期化します
@@ -39,7 +45,10 @@ namespace KOILib.Common.Log4
         {
             //ログファイル出力先をプログラム側から指定するための設定
             if (!string.IsNullOrEmpty(logFilepath))
-                Environment.SetEnvironmentVariable(LOG4NET_LOGFILE_PATH, logFilepath);
+            {
+                Environment.SetEnvironmentVariable(LOG4NET_LOGFILE_PATH, System.IO.Path.GetDirectoryName(logFilepath));
+                Environment.SetEnvironmentVariable(LOG4NET_LOGFILE_NAME, System.IO.Path.GetFileName(logFilepath));
+            }
 
             //log4net初期化
             var fi = new System.IO.FileInfo(confFilepath);

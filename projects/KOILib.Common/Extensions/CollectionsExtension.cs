@@ -40,12 +40,64 @@ namespace KOILib.Common.Extensions
 
         #region System.Collections.Generic.IDictionary
         /// <summary>
+        /// IDictionary に、指定のキー値を上書き追加します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dest"></param>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public static T Extend<T>(this T dest, IEnumerable<KeyValuePair<string, object>> src)
+            where T : IDictionary<string, object>
+        {
+            src?.ToList().ForEach(x => { dest[x.Key] = x.Value; });
+            return dest;
+        }
+        /// <summary>
+        /// IDictionary に、指定のキー値を上書き追加します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dest"></param>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public static T Extend<T>(this T dest, dynamic src)
+            where T : IDictionary<string, object>
+        {
+            return Extend(dest, (new KeyValueDictionary(src)).AsEnumerable());
+        }
+
+        /// <summary>
+        /// 値をマージし、新たな IDictionary を作成します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="newData"></param>
+        /// <returns></returns>
+        public static T Merge<T>(this T source, IEnumerable<KeyValuePair<string, object>> newData)
+            where T : IDictionary<string, object>, new()
+        {
+            return (new T()).Extend(source).Extend(newData);
+        }
+        /// <summary>
+        /// 値をマージし、新たな IDictionary を作成します
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="newData"></param>
+        /// <returns></returns>
+        public static T Merge<T>(this T source, dynamic newData)
+            where T : IDictionary<string, object>, new()
+        {
+            return Merge(source, (new KeyValueDictionary(newData)).AsEnumerable());
+        }
+
+        /// <summary>
         /// Dynamicオブジェクト(new {})をDictionaryに追加します。
         /// ネストオブジェクトはプロパティ名を連結し、フラットな状態に変換します。
         /// </summary>
         /// <param name="self"></param>
         /// <param name="value">dynamicオブジェクト</param>
-        public static void AddKeyValue(this IDictionary<string, object> self, object value)
+        public static void AddKeyValue<T>(this T self, object value)
+            where T : IDictionary<string, object>
         {
             if (value != null)
                 AddKeyValue(self, null, value, null);
@@ -57,7 +109,8 @@ namespace KOILib.Common.Extensions
         /// <param name="self"></param>
         /// <param name="value">dynamicオブジェクト</param>
         /// <param name="nameseparator">プロパティ名連結セパレータ</param>
-        public static void AddKeyValue(this IDictionary<string, object> self, object value, string nameseparator)
+        public static void AddKeyValue<T>(this T self, object value, string nameseparator)
+            where T : IDictionary<string, object>
         {
             if (value != null)
                 AddKeyValue(self, null, value, nameseparator);
@@ -70,7 +123,8 @@ namespace KOILib.Common.Extensions
         /// <param name="name">ネスト親のプロパティ名</param>
         /// <param name="value">dynamicオブジェクト</param>
         /// <param name="nameseparator">プロパティ名連結セパレータ</param>
-        public static void AddKeyValue(this IDictionary<string, object> self, string name, object value, string nameseparator)
+        public static void AddKeyValue<T>(this T self, string name, object value, string nameseparator)
+            where T : IDictionary<string, object>
         {
             PropertyDescriptorCollection props = TypeDescriptor.GetProperties(value);
             if (props.Count > 0)

@@ -55,6 +55,7 @@
     <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="Extensions\TypeExtension.cs" />
     <Compile Include="FieldAttributeBase.cs" />
+    <Compile Include="KeyValueDictionary.cs" />
     <Compile Include="StringList.cs" />
     <Compile Include="StringListDecoration.cs" />
     <Compile Include="Tasks.cs" />
