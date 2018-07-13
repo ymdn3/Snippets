@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using KOILib.Common.Extensions;
 
 namespace KOILib.Common.Aspmvc.MethodSelectors
 {
@@ -22,7 +23,13 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
         /// Formパラメータの値。
         /// 指定しないときNameが存在すれば妥当となる。
         /// </summary>
-        public string Value { get; private set; }
+        public IEnumerable<string> Values { get; private set; }
+
+        /// <summary>
+        /// 英字の大小を区別しないかどうか
+        /// </summary>
+        public bool IgnoreCase { get; set; }
+
 
         /// <summary>
         /// 
@@ -34,18 +41,35 @@ namespace KOILib.Common.Aspmvc.MethodSelectors
         {
             var req = controllerContext.HttpContext.Request;
 
-            return Value != null
-                ? string.Equals(Value, req.Form[Name], StringComparison.OrdinalIgnoreCase)
-                : req.Form[Name] != null;
+            var formValue = req.Form[Name];
+            var hasName = formValue != null;
+
+            if (!hasName)
+                return false;
+
+            if (Values == null)
+                return hasName;
+
+            if (IgnoreCase)
+                return formValue.EqualsAny(Values, StringComparison.OrdinalIgnoreCase);
+            else
+                return formValue.EqualsAny(Values, StringComparison.Ordinal);
         }
 
+        public AcceptFormAttribute(string name, string value, params string[] ormore)
+        {
+            this.Name = name;
+            this.Values = ormore.Prepend(value);
+        }
         public AcceptFormAttribute(string name, string value)
         {
             this.Name = name;
-            this.Value = value;
+            this.Values = new string[] { value };
         }
-        public AcceptFormAttribute(string name) : this(name, null)
+        public AcceptFormAttribute(string name)
         {
+            this.Name = name;
+            this.Values = null;
         }
     }
 }
